@@ -54,7 +54,8 @@ configurations {
 }
 
 dependencies {
-	compile group: "org.springframework.cloud", name: "spring-cloud-starter-sleuth"
+	compile group: "org.springframework.cloud", name: "spring-cloud-starter-zipkin"
+	compile group: "org.springframework.cloud", name: "spring-cloud-starter-gateway"
 	compile group: "org.springframework.boot", name: "spring-boot-starter-webflux"
 	compile group: "org.springframework.boot", name: "spring-boot-starter-actuator" // spring boot actuator
 	compile group: "org.springframework.cloud", name: "spring-cloud-starter-netflix-eureka-client"
