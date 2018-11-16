@@ -4,6 +4,8 @@ import (
 	"net"
 	"os"
 	"../integrate/logger"
+	"../integrate/authentication"
+	"../exceptions"
 	"fmt"
 	"bytes"
 	"io"
@@ -44,17 +46,32 @@ func forwardConn(conn net.Conn) {
 	if 1 < len(buffer) {
 		arr := strings.Split(string(buffer), "\r\n")
 		if 1 < len(arr) {
-			flag, host, context := authentication(arr) // 进行鉴权，并提取信息
-			logger.Info(strings.Join(arr, "\r\n"))
-			if flag {
-				forward([]byte(context), host, conn)
+			err, reqInfo := auth(arr) // 进行鉴权，并提取信息
+			if nil == err {
+				// 转发服务
+				logger.Info(strings.Join(arr, "\r\n"))
+				logger.Info(reqInfo.Token)
+			} else {
+				// TODO 驳回
+				logger.Error(err.Error())
 			}
+		} else {
+			// TODO 驳回
 		}
 	}
 }
 
-func authentication(arr []string) (bool, string, string) {
-	return false, "", ""
+// 服务鉴权
+func auth(arr []string) (error, *authentication.ReqInfo) {
+	token := authentication.GetTokenInfo(arr, "access-token")
+	if !token.Flag {
+		return &exceptions.Error{Msg: "token is null", Code: 400}, nil
+	}
+	err, reqInfo := authentication.GetBaseInfo(arr[0]) // 获取请求的 server 名字 和 请求路径
+	if nil == err {
+		reqInfo.Token = token // 写入token信息
+	}
+	return err, reqInfo
 }
 
 //接收数据统一方法
@@ -62,9 +79,9 @@ func receiveData(conn net.Conn) []byte {
 	var buf bytes.Buffer
 	buffer := make([]byte, 8192)
 	for {
-		sizenew, err := conn.Read(buffer)
-		buf.Write(buffer[:sizenew])
-		if err == io.EOF || sizenew < 8192 {
+		sizeNew, err := conn.Read(buffer)
+		buf.Write(buffer[:sizeNew])
+		if err == io.EOF || sizeNew < 8192 {
 			break
 		}
 	}
