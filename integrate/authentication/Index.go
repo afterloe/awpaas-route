@@ -5,8 +5,12 @@ import (
 	"../../exceptions"
 )
 
-/*
+/**
 	获取token 信息
+
+	@param: arr - tcp 解包内容的数组
+	@param: key - token 名字
+	@return: token结构体
  */
 func GetTokenInfo(arr []string, key string) *tokenInfo {
 	token := &tokenInfo{false, ""}
@@ -22,6 +26,9 @@ func GetTokenInfo(arr []string, key string) *tokenInfo {
 
 /*
 	替换多余"/"
+
+	@param：str - 需要替换的字符串
+	@return：替换后的字符串
  */
 func eliminate(str string) string {
 	strArr := strings.Split(str, "/")
@@ -36,6 +43,9 @@ func eliminate(str string) string {
 
 /*
 	获取请求信息
+
+	@param: str - tcp解包第一条信息 包含 Method、URL等信息
+	@return： 请求信息
  */
 func GetBaseInfo(str string) (error, *ReqInfo) {
 	str = eliminate(str)
