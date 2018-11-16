@@ -63,9 +63,11 @@ func doForwardConn(conn net.Conn) {
 		arr := strings.Split(string(buffer), "\r\n")
 		if 1 < len(arr) {
 			err, reqInfo := auth(arr) // 提取鉴权信息
-			err = queryWhiteList(reqInfo) // 查询白名单
-			if nil != err {
-				//
+			err, pathStr = queryWhiteList(reqInfo) // 查询白名单
+			if nil == err {
+				// 在白名单之内，不需要鉴权即可访问
+				forward();
+				return
 			}
 			err = linkAndQuery(reqInfo) // 查询鉴权信息
 			err = linkAndList(reqInfo) // 查询服务映射表
@@ -81,6 +83,17 @@ func doForwardConn(conn net.Conn) {
 			// TODO 驳回
 		}
 	}
+}
+
+/**
+	查询白名单信息
+
+	@param: reqInfo - 请求信息
+	@return: error - 异常信息
+	@return: str - 转发地址
+*/
+func queryWhiteList(req *authentication.ReqInfo) (error, str string) {
+	return nil, ""
 }
 
 /**
