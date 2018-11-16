@@ -1,14 +1,13 @@
 package server
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"../integrate/logger"
-	"../integrate/notSupper"
-	"../util"
-	"../config"
-	//"../routers"
+	"net"
 	"os"
+	"../integrate/logger"
+	"fmt"
+	"bytes"
+	"io"
+	"strings"
 )
 
 var notFoundStr, notSupperStr string
@@ -19,33 +18,44 @@ func init() {
 }
 
 func StartUpTCPServer(addr *string) {
-	gin.DisableConsoleColor()
-	gin.SetMode(gin.ReleaseMode)
-	engine := gin.New()
-	engine.Use(gin.Recovery())
-	engine.Use(logger.Logger())
-	engine.Use(notSupper.HasError())
-	engine.NoRoute(notSupper.NotFound(&notFoundStr))
-	engine.NoMethod(notSupper.NotSupper(&notSupperStr))
-	infoEntryPoint(engine)
-	//routers.Execute(engine.Group("/v1"))
-	server := &http.Server{
-		Addr: *addr,
-		Handler: engine,
-		MaxHeaderBytes: 1 << 20,
+	netListen, err := net.Listen("tcp", *addr)
+	if nil != err {
+		logger.Error(fmt.Sprintf("can't start server in %s ", *addr))
+		logger.Error(err.Error())
+		os.Exit(100)
 	}
-
-	error := server.ListenAndServe()
-	if nil != error {
-		logger.Error("server can't to run")
-		logger.Error(error.Error())
-		os.Exit(102)
+	defer netListen.Close()
+	logger.Info("waiting request ...")
+	for {
+		conn, err := netListen.Accept()
+		if nil != err {
+			continue
+		}
+		if nil != conn{
+			go forwardConn(conn)
+		}
+	}
+}
+func forwardConn(conn net.Conn) {
+	buffer := receiveData(conn)
+	defer conn.Close()
+	if 1 < len(buffer) {
+		arr := strings.Split(string(buffer), "\r\n")
+		if 1 < len(arr) {
+			logger.Info(strings.Join(arr, "\r\n"))
+		}
 	}
 }
 
-func infoEntryPoint(c *gin.Engine) {
-	info := config.Get("info").(map[string]interface{})
-	c.GET("/info", func(context *gin.Context) {
-		context.JSON(http.StatusOK, util.Success(info))
-	})
+func receiveData(conn net.Conn) []byte {
+	var buf bytes.Buffer
+	buffer := make([]byte, 8192)
+	for {
+		sizenew, err := conn.Read(buffer)
+		buf.Write(buffer[:sizenew])
+		if err == io.EOF || sizenew < 8192 {
+			break
+		}
+	}
+	return buf.Bytes()
 }

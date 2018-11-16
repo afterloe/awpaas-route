@@ -5,7 +5,6 @@ import (
 	"../exceptions"
 	"encoding/json"
 	"github.com/satori/go.uuid"
-	//"strings"
 	"strings"
 )
 
