@@ -46,7 +46,7 @@ func StartUpTCPServer(addr *string, serverCfg map[string]interface{}) {
 			continue
 		}
 		if nil != conn{
-			go forwardConn(conn)
+			go doForwardConn(conn) // 异步处理
 		}
 	}
 }
@@ -56,14 +56,19 @@ func StartUpTCPServer(addr *string, serverCfg map[string]interface{}) {
 
 	@param: conn - 连接信息
  */
-func forwardConn(conn net.Conn) {
+func doForwardConn(conn net.Conn) {
 	buffer := receiveData(conn)
 	defer conn.Close()
 	if 1 < len(buffer) {
 		arr := strings.Split(string(buffer), "\r\n")
 		if 1 < len(arr) {
 			err, reqInfo := auth(arr) // 提取鉴权信息
+			err = queryWhiteList(reqInfo) // 查询白名单
+			if nil != err {
+				//
+			}
 			err = linkAndQuery(reqInfo) // 查询鉴权信息
+			err = linkAndList(reqInfo) // 查询服务映射表
 			if nil == err {
 				// TODO 转发服务
 				logger.Info(strings.Join(arr, "\r\n"))
