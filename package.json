@@ -1,4 +1,7 @@
 {
+  "custom": {
+    "tokenName": "ACCESS"
+  },
   "info": {
     "name": "awpaas-route",
     "version": "1.0.0",

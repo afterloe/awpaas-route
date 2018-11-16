@@ -31,7 +31,7 @@ func startUpService(serverCfg map[string]interface{}) {
 	}
 	addrStr := fmt.Sprintf("%s:%s", addr, port)
 	logger.Info(fmt.Sprintf("will start server in %s ", addrStr))
-	cli.StartUpTCPServer(&addrStr)
+	cli.StartUpTCPServer(&addrStr, config.Get("custom").(map[string]interface{}))
 }
 
 func startUpMultiService(multiCfg map[string]interface{}) {
@@ -57,7 +57,7 @@ func startDefault() {
 	logger.Info(fmt.Sprintf("listen parameter is null, will start server in %s default", defAddr))
 	logger.Info(fmt.Sprintf("server is init success... started pid is %d", pid))
 	logger.Info("started server success.")
-	cli.StartUpTCPServer(&defAddr)
+	cli.StartUpTCPServer(&defAddr, config.Get("custom").(map[string]interface{}))
 }
 
 func main() {

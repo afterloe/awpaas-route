@@ -12,14 +12,19 @@ import (
 	"strings"
 )
 
-var notFoundStr, notSupperStr string
+var notFoundStr, notSupperStr,key string
 
 func init() {
 	notFoundStr = "route is not defined."
 	notSupperStr = "method is not supper"
 }
 
-func StartUpTCPServer(addr *string) {
+func StartUpTCPServer(addr *string,serverCfg map[string]interface{}) {
+	if nil != serverCfg["tokenName"] {
+		key = serverCfg["tokenName"].(string)
+	} else {
+		key = "access-token"
+	}
 	netListen, err := net.Listen("tcp", *addr)
 	if nil != err {
 		logger.Error(fmt.Sprintf("can't start server in %s ", *addr))
@@ -63,7 +68,7 @@ func forwardConn(conn net.Conn) {
 
 // 服务鉴权
 func auth(arr []string) (error, *authentication.ReqInfo) {
-	token := authentication.GetTokenInfo(arr, "access-token")
+	token := authentication.GetTokenInfo(arr, key)
 	if !token.Flag {
 		return &exceptions.Error{Msg: "token is null", Code: 400}, nil
 	}
