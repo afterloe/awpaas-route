@@ -21,27 +21,47 @@ func init() {
 	pid = os.Getpid()
 }
 
-func startUpService(serverCfg map[string]interface{}) {
-	addr, port := serverCfg["addr"], serverCfg["port"]
+
+func startDefault() {
+	logger.Info(fmt.Sprintf("listen parameter is null, will start server in %s default", defAddr))
+	logger.Info(fmt.Sprintf("server is init success... started pid is %d", pid))
+	cli.StartUpTCPServer(&defAddr, config.Get("custom").(map[string]interface{}))
+}
+
+func startUpGatewayService(cfg map[string]interface{}) {
+	addr, port := cfg["addr"], cfg["port"]
 	if nil == addr {
 		addr = "127.0.0.1"
 	}
 	if nil == port {
 		port = "8080"
 	}
+	multiServiceCfg(cfg["multiCore"].(map[string]interface{}))
 	addrStr := fmt.Sprintf("%s:%s", addr, port)
-	logger.Info(fmt.Sprintf("will start server in %s ", addrStr))
+	logger.Info(fmt.Sprintf("gateway server will start in %s ", addrStr))
 	cli.StartUpTCPServer(&addrStr, config.Get("custom").(map[string]interface{}))
 }
 
-func startUpMultiService(multiCfg map[string]interface{}) {
-	flg := multiCfg["enable"]
+func startUpDaemonService(cfg map[string]interface{}) {
+	addr, port := cfg["addr"], cfg["port"]
+	if nil == addr {
+		addr = "127.0.0.1"
+	}
+	if nil == port {
+		port = "8081"
+	}
+	addrStr := fmt.Sprintf("%s:%s", addr, port)
+	cli.StartUpDaemonService(&addrStr, nil)
+}
+
+func multiServiceCfg(cfg map[string]interface{}) {
+	flg := cfg["enable"]
 	if nil == flg {
 		logger.Info("server not allow to use multi cpu")
 		return
 	}
 	if flg.(bool) {
-		coreNumber := multiCfg["num"]
+		coreNumber := cfg["num"]
 		logger.Info("server will to use multi cpu")
 		if nil == coreNumber {
 			coreNumber = cpuNumber
@@ -53,13 +73,6 @@ func startUpMultiService(multiCfg map[string]interface{}) {
 	}
 }
 
-func startDefault() {
-	logger.Info(fmt.Sprintf("listen parameter is null, will start server in %s default", defAddr))
-	logger.Info(fmt.Sprintf("server is init success... started pid is %d", pid))
-	logger.Info("started server success.")
-	cli.StartUpTCPServer(&defAddr, config.Get("custom").(map[string]interface{}))
-}
-
 func main() {
 	logger.Info("server init ...")
 	logger.Info(fmt.Sprintf("machine is %d cpus.", cpuNumber))
@@ -68,11 +81,6 @@ func main() {
 		startDefault()
 		return
 	}
-	multiCfg := serverCfg["multiCore"].(map[string]interface{})
-	if nil == multiCfg {
-		startUpService(serverCfg)
-	} else {
-		startUpMultiService(multiCfg)
-		startUpService(serverCfg)
-	}
+	startUpGatewayService(serverCfg["gateway"].(map[string]interface{}))
+	startUpDaemonService(serverCfg["daemon"].(map[string]interface{}))
 }
