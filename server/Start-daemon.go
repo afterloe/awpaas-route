@@ -45,6 +45,7 @@ func StartUpDaemonService(addr *string, serverCfg map[string]interface{}) {
 		logger.Error(error.Error())
 		os.Exit(102)
 	}
+	logger.Info("daemon service is ready ...")
 }
 
 func infoEntryPoint(c *gin.Engine) {

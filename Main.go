@@ -51,6 +51,7 @@ func startUpDaemonService(cfg map[string]interface{}) {
 		port = "8081"
 	}
 	addrStr := fmt.Sprintf("%s:%s", addr, port)
+	logger.Info(fmt.Sprintf("daemon server will start in %s ", addrStr))
 	cli.StartUpDaemonService(&addrStr, nil)
 }
 
@@ -62,14 +63,13 @@ func multiServiceCfg(cfg map[string]interface{}) {
 	}
 	if flg.(bool) {
 		coreNumber := cfg["num"]
-		logger.Info("server will to use multi cpu")
 		if nil == coreNumber {
 			coreNumber = cpuNumber
 		} else if 0 >= coreNumber.(float64) {
 			coreNumber = cpuNumber
 		}
-		logger.Info(fmt.Sprintf("server will use %v cpu", coreNumber))
-		runtime.GOMAXPROCS(int(coreNumber.(float64)))
+		logger.Info(fmt.Sprintf("multi server model, server will use %v cpu", coreNumber))
+		runtime.GOMAXPROCS(int(coreNumber.(float64)) * 4) // 限制go 出去的数量
 	}
 }
 
@@ -77,10 +77,12 @@ func main() {
 	logger.Info("server init ...")
 	logger.Info(fmt.Sprintf("machine is %d cpus.", cpuNumber))
 	serverCfg := config.Get("server").(map[string]interface{})
+	finish := make(chan bool)
 	if nil == serverCfg {
 		startDefault()
 		return
 	}
-	startUpGatewayService(serverCfg["gateway"].(map[string]interface{}))
-	startUpDaemonService(serverCfg["daemon"].(map[string]interface{}))
+	go startUpDaemonService(serverCfg["daemon"].(map[string]interface{}))
+	go startUpGatewayService(serverCfg["gateway"].(map[string]interface{}))
+	<-finish
 }

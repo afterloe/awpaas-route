@@ -49,7 +49,7 @@ func StartUpTCPServer(addr *string, serverCfg map[string]interface{}) {
 		os.Exit(100)
 	}
 	logger.Info(fmt.Sprintf("auto config -- tokenName is %s, bufferSize is %d", key, buffSize))
-	logger.Info("service is ready ...")
+	logger.Info("gateway service is ready ...")
 	for {
 		conn, err := netListen.Accept() // 获取客户端连接
 		if nil != err {
