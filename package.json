@@ -1,6 +1,7 @@
 {
   "custom": {
-    "tokenName": "access-token"
+    "tokenName": "access-token",
+    "size": 8192
   },
   "info": {
     "name": "awpaas-route",
