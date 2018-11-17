@@ -14,14 +14,12 @@ import (
 )
 
 var (
-	notFoundStr, notSupperStr,key string
+	key string
 	buffSize int
 	needToken bool
 )
 
 func init() {
-	notFoundStr = "route is not defined."
-	notSupperStr = "method is not supper"
 	key = "access-token"
 	buffSize = 1024
 	needToken = false
