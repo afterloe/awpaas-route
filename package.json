@@ -1,6 +1,6 @@
 {
   "custom": {
-    "tokenName": "ACCESS"
+    "tokenName": "access-token"
   },
   "info": {
     "name": "awpaas-route",
