@@ -10,13 +10,21 @@ import (
 	"bytes"
 	"io"
 	"strings"
+	// "time"
 )
 
-var notFoundStr, notSupperStr,key string
+var (
+	key string
+	buffSize int
+	needToken bool
+	daemonAddr string
+)
 
 func init() {
-	notFoundStr = "route is not defined."
-	notSupperStr = "method is not supper"
+	key = "access-token"
+	buffSize = 1024
+	needToken = false
+	daemonAddr = "127.0.0.1:8081"
 }
 
 /**
@@ -28,20 +36,24 @@ func init() {
 func StartUpTCPServer(addr *string, serverCfg map[string]interface{}) {
 	if nil != serverCfg["tokenName"] {
 		key = serverCfg["tokenName"].(string)
-	} else {
-		// 默认 token名
-		key = "access-token"
+	} 
+	if nil != serverCfg["size"] {
+		buffSize = int(serverCfg["size"].(float64))
+	}
+	if nil != serverCfg["needToken"] {
+		needToken = serverCfg["needToken"].(bool)
 	}
 	netListen, err := net.Listen("tcp", *addr)
+	defer netListen.Close()
 	if nil != err {
 		logger.Error(fmt.Sprintf("can't start server in %s ", *addr))
 		logger.Error(err.Error())
 		os.Exit(100)
 	}
-	defer netListen.Close()
-	logger.Info("waiting request ...")
+	logger.Info(fmt.Sprintf("auto config -- tokenName is %s, bufferSize is %d", key, buffSize))
+	logger.Info("gateway service is ready ...")
 	for {
-		conn, err := netListen.Accept()
+		conn, err := netListen.Accept() // 获取客户端连接
 		if nil != err {
 			continue
 		}
@@ -57,52 +69,52 @@ func StartUpTCPServer(addr *string, serverCfg map[string]interface{}) {
 	@param: conn - 连接信息
  */
 func doForwardConn(conn net.Conn) {
-	buffer := receiveData(conn)
 	defer conn.Close()
+	buffer := receiveData(conn) 
 	if 1 < len(buffer) {
 		arr := strings.Split(string(buffer), "\r\n")
-		if 1 < len(arr) {
-			err, reqInfo := auth(arr) // 提取鉴权信息
-			err, pathStr = queryWhiteList(reqInfo) // 查询白名单
-			if nil == err {
-				// 在白名单之内，不需要鉴权即可访问
-				forward();
-				return
-			}
-			err = linkAndQuery(reqInfo) // 查询鉴权信息
-			err = linkAndList(reqInfo) // 查询服务映射表
-			if nil == err {
-				// TODO 转发服务
-				logger.Info(strings.Join(arr, "\r\n"))
-				logger.Info(reqInfo.Token)
-			} else {
-				// TODO 驳回
-				logger.Error(err.Error())
-			}
-		} else {
-			// TODO 驳回
+		err, reqInfo := extractAuthInfo(arr) // 提取鉴权信息
+		if nil != err { // 如果提取出现异常，则跳转到异常界面
+			logger.Info("can't find authorize info.")
+			callDaemon(400, "can't%20find%20authorize%20info.", conn)
+			return
 		}
+		flag, remote := query_whiteList(reqInfo) // 查询白名单
+		if flag { // 在白名单之内，不需要鉴权即可访问
+			arr[1] = fmt.Sprintf("Host: %s", remote)
+			forward(reqInfo, remote, arr, conn)
+			return
+		}
+		err = query_authInfo(reqInfo) // 查询鉴权信息
+		if nil != err {
+			logger.Info("authentication information query failed.")
+			return
+		}
+		err, remote = query_mapList(reqInfo) // 查询服务映射表
+		if nil != err { // 服务列表未查询到
+			logger.Info("service not found.")
+			return
+		} 
+		forward(reqInfo, remote, arr, conn)
+	} else { // 返回服务异常
+		logger.Info("has error")
+		callDaemon(400, "can't%20find%20authorize%20info.", conn)
 	}
 }
 
-/**
-	查询白名单信息
-
-	@param: reqInfo - 请求信息
-	@return: error - 异常信息
-	@return: str - 转发地址
-*/
-func queryWhiteList(req *authentication.ReqInfo) (error, str string) {
-	return nil, ""
-}
-
-/**
-	查询鉴权信息
-
-	@param: info - 提出的鉴权信息
- */
-func linkAndQuery(info *authentication.ReqInfo) error {
-	return nil
+func callDaemon(code int, msg string, baseConn net.Conn) {
+	content := []string{"", "", "Connection: keep-alive", "User-Agent: inline", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", "Accept-Encoding: gzip, deflate, br", "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,it;q=0.7", "", ""}
+	content[0] = fmt.Sprintf("GET /v1/tips/%d?content=%s HTTP/1.1", code, msg)
+	content[1] = fmt.Sprintf("Host: %s", daemonAddr)
+	server, err := net.Dial("tcp", daemonAddr)
+	defer server.Close()
+	if nil != err {
+		logger.Info(err)
+		return
+	}
+	server.Write([]byte(strings.Join(content, "\r\n")))
+	go io.Copy(server, baseConn)
+	io.Copy(baseConn, server)
 }
 
 /**
@@ -110,7 +122,7 @@ func linkAndQuery(info *authentication.ReqInfo) error {
 
 	@param：arr - tcp请求内容
  */
-func auth(arr []string) (error, *authentication.ReqInfo) {
+ func extractAuthInfo(arr []string) (error, *authentication.ReqInfo) {
 	token := authentication.GetTokenInfo(arr, key)
 	if !token.Flag {
 		return &exceptions.Error{Msg: "token is null", Code: 400}, nil
@@ -123,21 +135,37 @@ func auth(arr []string) (error, *authentication.ReqInfo) {
 }
 
 /**
-	接收数据统一方法
+	查询白名单信息
 
-	@param：conn - tcp连接
+	@param: reqInfo - 请求信息
+	@return: error - 异常信息
+
+	@return: str - 转发地址
+*/
+func query_whiteList(req *authentication.ReqInfo) (bool, string) {
+	return true, "127.0.0.1:5984"
+}
+
+/**
+	查询鉴权信息
+
+	@param: info - 提出的鉴权信息
+
+	@return: error - 鉴权错误信息
  */
-func receiveData(conn net.Conn) []byte {
-	var buf bytes.Buffer
-	buffer := make([]byte, 8192)
-	for {
-		sizeNew, err := conn.Read(buffer)
-		buf.Write(buffer[:sizeNew])
-		if err == io.EOF || sizeNew < 8192 {
-			break
-		}
-	}
-	return buf.Bytes()
+ func query_authInfo(info *authentication.ReqInfo) error {
+	return nil
+}
+
+/**
+	查询服务映射表
+
+	@param: reqInfo - 请求信息
+	@return: error - 异常信息
+	@return: string - 服务映射的实际地址
+*/
+func query_mapList(req *authentication.ReqInfo) (error, string) {
+	return nil, ""
 }
 
 /**
@@ -147,16 +175,36 @@ func receiveData(conn net.Conn) []byte {
 	@param：host - 信息内容
 	@param：baseConn - 原连接信息
   */
-func forward(data []byte, host string, baseConn net.Conn) {
-	conn, _ := net.Dial("tcp", host)
-	conn.Write(data)
-	//time.Sleep(10 * time.Millisecond)
-	bufferHead := receiveData(conn)
-	//time.Sleep(10 * time.Millisecond)
-	bufferBody := receiveData(conn)
+ func forward(req *authentication.ReqInfo, addr string, content []string, baseConn net.Conn) {
+	server, err := net.Dial("tcp", addr)
+	defer server.Close()
+	if nil != err {
+		logger.Info(err)
+		return
+	}
+	if "CONNECT" == req.Method {
+		fmt.Fprint(baseConn, "HTTP/1.1 200 Connection established\r\n")
+	} else {
+		server.Write([]byte(strings.Join(content, "\r\n")))
+	}
+	go io.Copy(server, baseConn)
+	io.Copy(baseConn, server)
+}
+
+/**
+	接收数据统一方法
+
+	@param：conn - tcp连接
+ */
+func receiveData(conn net.Conn) []byte {
 	var buf bytes.Buffer
-	buf.Write(bufferHead)
-	buf.Write(bufferBody)
-	baseConn.Write(buf.Bytes())
-	conn.Close()
+	buffer := make([]byte, buffSize)
+	for {
+		sizeNew, err := conn.Read(buffer)
+		buf.Write(buffer[:sizeNew])
+		if err == io.EOF || sizeNew < buffSize {
+			break
+		}
+	}
+	return buf.Bytes()
 }

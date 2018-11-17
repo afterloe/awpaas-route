@@ -1,6 +1,8 @@
 {
   "custom": {
-    "tokenName": "ACCESS"
+    "tokenName": "access-token",
+    "needToken": true,
+    "size": 8192
   },
   "info": {
     "name": "awpaas-route",
@@ -10,11 +12,17 @@
     "remarks": "统一访问网关，转发socket服务，实现服务鉴权"
   },
   "server": {
-    "addr": "127.0.0.1",
-    "port": "8080",
-    "multiCore": {
-      "enable": false,
-      "num": 4
+    "gateway": {
+      "addr": "127.0.0.1",
+      "port": "8080",
+      "multiCore": {
+        "enable": true,
+        "num": 4
+      }
+    },
+    "daemon": {
+      "addr": "127.0.0.1",
+      "port": "8081"
     }
   },
   "dependencies": {
