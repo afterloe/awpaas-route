@@ -63,14 +63,15 @@ func doForwardConn(conn net.Conn) {
 		arr := strings.Split(string(buffer), "\r\n")
 		if 1 < len(arr) {
 			err, reqInfo := auth(arr) // 提取鉴权信息
-			err, pathStr = queryWhiteList(reqInfo) // 查询白名单
-			if nil == err {
+			pathStr, flag := queryWhiteList(reqInfo) // 查询白名单
+			if flag {
 				// 在白名单之内，不需要鉴权即可访问
-				forward();
+				arr[1] = fmt.Sprintf("Host: %s", pathStr)
+				forward([]byte(strings.Join(arr, "\r\n")), pathStr, conn)
 				return
 			}
 			err = linkAndQuery(reqInfo) // 查询鉴权信息
-			err = linkAndList(reqInfo) // 查询服务映射表
+			err, pathStr = linkAndList(reqInfo) // 查询服务映射表
 			if nil == err {
 				// TODO 转发服务
 				logger.Info(strings.Join(arr, "\r\n"))
@@ -86,14 +87,26 @@ func doForwardConn(conn net.Conn) {
 }
 
 /**
+	查询服务映射表
+
+	@param: reqInfo - 请求信息
+	@return: error - 异常信息
+	@return: string - 服务映射的实际地址
+*/
+func linkAndList(req *authentication.ReqInfo) (error, string) {
+	return nil, ""
+}
+
+/**
 	查询白名单信息
 
 	@param: reqInfo - 请求信息
 	@return: error - 异常信息
+
 	@return: str - 转发地址
 */
-func queryWhiteList(req *authentication.ReqInfo) (error, str string) {
-	return nil, ""
+func queryWhiteList(req *authentication.ReqInfo) (string, bool) {
+	return "127.0.0.1:5984", true
 }
 
 /**
