@@ -69,7 +69,7 @@ func multiServiceCfg(cfg map[string]interface{}) {
 			coreNumber = cpuNumber
 		}
 		logger.Info(fmt.Sprintf("multi server model, server will use %v cpu", coreNumber))
-		runtime.GOMAXPROCS(int(coreNumber.(float64)) * 4) // 限制go 出去的数量
+		runtime.GOMAXPROCS(int(coreNumber.(float64)) * 2) // 限制go 出去的数量
 	}
 }
 
