@@ -17,12 +17,14 @@ var (
 	key string
 	buffSize int
 	needToken bool
+	daemonAddr string
 )
 
 func init() {
 	key = "access-token"
 	buffSize = 1024
 	needToken = false
+	daemonAddr = "127.0.0.1:8081"
 }
 
 /**
@@ -74,6 +76,7 @@ func doForwardConn(conn net.Conn) {
 		err, reqInfo := extractAuthInfo(arr) // 提取鉴权信息
 		if nil != err { // 如果提取出现异常，则跳转到异常界面
 			logger.Info("can't find authorize info.")
+			callDaemon(400, "can't%20find%20authorize%20info.", conn)
 			return
 		}
 		flag, remote := query_whiteList(reqInfo) // 查询白名单
@@ -94,8 +97,24 @@ func doForwardConn(conn net.Conn) {
 		} 
 		forward(reqInfo, remote, arr, conn)
 	} else { // 返回服务异常
-		logger.Info("has error")	
+		logger.Info("has error")
+		callDaemon(400, "can't%20find%20authorize%20info.", conn)
 	}
+}
+
+func callDaemon(code int, msg string, baseConn net.Conn) {
+	content := []string{"", "", "Connection: keep-alive", "User-Agent: inline", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", "Accept-Encoding: gzip, deflate, br", "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,it;q=0.7", "", ""}
+	content[0] = fmt.Sprintf("GET /v1/tips/%d?content=%s HTTP/1.1", code, msg)
+	content[1] = fmt.Sprintf("Host: %s", daemonAddr)
+	server, err := net.Dial("tcp", daemonAddr)
+	defer server.Close()
+	if nil != err {
+		logger.Info(err)
+		return
+	}
+	server.Write([]byte(strings.Join(content, "\r\n")))
+	go io.Copy(server, baseConn)
+	io.Copy(baseConn, server)
 }
 
 /**
