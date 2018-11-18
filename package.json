@@ -27,7 +27,9 @@
   },
   "dependencies": {
     "github.com/docker/docker": "laster",
-    "golang.org/x/net/context": "laster"
+    "golang.org/x/net/context": "laster",
+    "github.com/garyburd/redigo/redis" : "laster",
+    "github.com/gin-gonic/gin": "laster"
   },
   "services": {
     "docker-cli": {
