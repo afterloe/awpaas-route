@@ -102,7 +102,10 @@ func doForwardConn(conn net.Conn) {
 	}
 }
 
-func callDaemon(code int, msg string, baseConn net.Conn) {
+/**
+	访问守护线程获取信息
+*/
+func callDaemon(code int, msg string, client net.Conn) {
 	content := []string{"", "", "Connection: keep-alive", "User-Agent: inline", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", "Accept-Encoding: gzip, deflate, br", "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,it;q=0.7", "", ""}
 	content[0] = fmt.Sprintf("GET /v1/tips/%d?content=%s HTTP/1.1", code, msg)
 	content[1] = fmt.Sprintf("Host: %s", daemonAddr)
@@ -112,9 +115,9 @@ func callDaemon(code int, msg string, baseConn net.Conn) {
 		logger.Info(err)
 		return
 	}
-	server.Write([]byte(strings.Join(content, "\r\n")))
-	go io.Copy(server, baseConn)
-	io.Copy(baseConn, server)
+	linkAndConnection(strings.Join(content, "\r\n"), server, client)
+	// io.Copy(baseConn, server)
+	// io.Copy(server, baseConn)	
 }
 
 /**
@@ -122,7 +125,7 @@ func callDaemon(code int, msg string, baseConn net.Conn) {
 
 	@param：arr - tcp请求内容
  */
- func extractAuthInfo(arr []string) (error, *authentication.ReqInfo) {
+func extractAuthInfo(arr []string) (error, *authentication.ReqInfo) {
 	token := authentication.GetTokenInfo(arr, key)
 	if !token.Flag {
 		return &exceptions.Error{Msg: "token is null", Code: 400}, nil
@@ -153,7 +156,7 @@ func query_whiteList(req *authentication.ReqInfo) (bool, string) {
 
 	@return: error - 鉴权错误信息
  */
- func query_authInfo(info *authentication.ReqInfo) error {
+func query_authInfo(info *authentication.ReqInfo) error {
 	return nil
 }
 
@@ -175,7 +178,7 @@ func query_mapList(req *authentication.ReqInfo) (error, string) {
 	@param：host - 信息内容
 	@param：baseConn - 原连接信息
   */
- func forward(req *authentication.ReqInfo, addr string, content []string, baseConn net.Conn) {
+func forward(req *authentication.ReqInfo, addr string, content []string, client net.Conn) {
 	server, err := net.Dial("tcp", addr)
 	defer server.Close()
 	if nil != err {
@@ -183,12 +186,16 @@ func query_mapList(req *authentication.ReqInfo) (error, string) {
 		return
 	}
 	if "CONNECT" == req.Method {
-		fmt.Fprint(baseConn, "HTTP/1.1 200 Connection established\r\n")
-	} else {
-		server.Write([]byte(strings.Join(content, "\r\n")))
+		fmt.Fprint(client, "HTTP/1.1 200 Connection established\r\n")
 	}
-	go io.Copy(server, baseConn)
-	io.Copy(baseConn, server)
+	linkAndConnection(strings.Join(content, "\r\n"), server, client)
+}
+
+
+func linkAndConnection(content string, server net.Conn, client net.Conn) {
+	server.Write([]byte(content))
+	reciveBuf := receiveData(server)
+	client.Write(reciveBuf)
 }
 
 /**
