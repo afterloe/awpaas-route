@@ -6,6 +6,7 @@ import (
 	"../integrate/logger"
 	"../integrate/authentication"
 	"../exceptions"
+	"../service/cache"
 	"fmt"
 	"bytes"
 	"io"
@@ -102,27 +103,36 @@ func doForwardConn(conn net.Conn) {
 	}
 }
 
-func callDaemon(code int, msg string, baseConn net.Conn) {
+/**
+	访问守护线程获取信息
+
+	@param: code - 返回状态码
+	@param: msg - 返回信息
+	@param: client - 客户端连接
+*/
+func callDaemon(code int, msg string, client net.Conn) {
 	content := []string{"", "", "Connection: keep-alive", "User-Agent: inline", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8", "Accept-Encoding: gzip, deflate, br", "Accept-Language: zh-CN,zh;q=0.9,en;q=0.8,it;q=0.7", "", ""}
 	content[0] = fmt.Sprintf("GET /v1/tips/%d?content=%s HTTP/1.1", code, msg)
 	content[1] = fmt.Sprintf("Host: %s", daemonAddr)
-	server, err := net.Dial("tcp", daemonAddr)
-	defer server.Close()
+	remote, err := net.Dial("tcp", daemonAddr)
+	defer remote.Close()
 	if nil != err {
 		logger.Info(err)
 		return
 	}
-	server.Write([]byte(strings.Join(content, "\r\n")))
-	go io.Copy(server, baseConn)
-	io.Copy(baseConn, server)
+	linkAndConnection(strings.Join(content, "\r\n"), remote, client)
+	// io.Copy(baseConn, remote)
+	// io.Copy(remote, baseConn)	
 }
 
 /**
 	提取鉴权信息
 
 	@param：arr - tcp请求内容
+	@return: 提取异常
+	@return: 鉴权信息
  */
- func extractAuthInfo(arr []string) (error, *authentication.ReqInfo) {
+func extractAuthInfo(arr []string) (error, *authentication.ReqInfo) {
 	token := authentication.GetTokenInfo(arr, key)
 	if !token.Flag {
 		return &exceptions.Error{Msg: "token is null", Code: 400}, nil
@@ -138,22 +148,20 @@ func callDaemon(code int, msg string, baseConn net.Conn) {
 	查询白名单信息
 
 	@param: reqInfo - 请求信息
-	@return: error - 异常信息
-
-	@return: str - 转发地址
+	@return: bool - 是否存在与白名单
+	@return: string - 映射的地址
 */
 func query_whiteList(req *authentication.ReqInfo) (bool, string) {
-	return true, "127.0.0.1:5984"
+	return cache.QueryWhiteList(req.ServerName)
 }
 
 /**
 	查询鉴权信息
 
 	@param: info - 提出的鉴权信息
-
 	@return: error - 鉴权错误信息
  */
- func query_authInfo(info *authentication.ReqInfo) error {
+func query_authInfo(info *authentication.ReqInfo) error {
 	return nil
 }
 
@@ -173,22 +181,32 @@ func query_mapList(req *authentication.ReqInfo) (error, string) {
 
 	@param：data - 转发tcp包
 	@param：host - 信息内容
-	@param：baseConn - 原连接信息
+	@param：client - 客户端链接
   */
- func forward(req *authentication.ReqInfo, addr string, content []string, baseConn net.Conn) {
-	server, err := net.Dial("tcp", addr)
-	defer server.Close()
+func forward(req *authentication.ReqInfo, addr string, content []string, client net.Conn) {
+	remote, err := net.Dial("tcp", addr)
+	defer remote.Close()
 	if nil != err {
 		logger.Info(err)
 		return
 	}
 	if "CONNECT" == req.Method {
-		fmt.Fprint(baseConn, "HTTP/1.1 200 Connection established\r\n")
-	} else {
-		server.Write([]byte(strings.Join(content, "\r\n")))
+		fmt.Fprint(client, "HTTP/1.1 200 Connection established\r\n\r\n")
 	}
-	go io.Copy(server, baseConn)
-	io.Copy(baseConn, server)
+	linkAndConnection(strings.Join(content, "\r\n"), remote, client)
+}
+
+/**
+	链接并转发请求
+
+	@param: content - http报文
+	@param: remote - 远程服务器
+	@param: client - 客户端链接
+*/
+func linkAndConnection(content string, remote net.Conn, client net.Conn) {
+	remote.Write([]byte(content))
+	reciveBuf := receiveData(remote)
+	client.Write(reciveBuf)
 }
 
 /**
