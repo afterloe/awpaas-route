@@ -7,6 +7,12 @@ import (
 	"reflect"
 )
 
+func Test_getWhiteList(t *testing.T) {
+	whiteList := config.GetByTarget(config.Get("custom"),"whiteList")
+
+	t.Log(reflect.TypeOf(whiteList))
+}
+
 func Test_NumberFormat(t *testing.T) {
 	serverCfg := config.Get("server").(map[string]interface{})
 	gatewayCfg := config.GetByTarget(serverCfg, "gateway")

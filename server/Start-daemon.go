@@ -6,6 +6,7 @@ import (
 	"../integrate/logger"
 	"../integrate/notSupper"
 	"../routers"
+	"../config"
 	"../service/cache"
 	"os"
 )
@@ -21,11 +22,11 @@ func init() {
 	启动守护进程
 
 */
-func StartUpDaemonService(addr *string, serverCfg map[string]interface{}) {
+func StartUpDaemonService(addr *string, cfg interface{}) {
 	gin.DisableConsoleColor()
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
-	initDaemonService(engine, serverCfg)
+	initDaemonService(engine, cfg)
 	server := &http.Server{
 		Addr: *addr,
 		Handler: engine,
@@ -39,7 +40,7 @@ func StartUpDaemonService(addr *string, serverCfg map[string]interface{}) {
 	}
 }
 
-func initDaemonService(engine *gin.Engine, serverCfg map[string]interface{}) {
+func initDaemonService(engine *gin.Engine, cfg interface{}) {
 	engine.Use(gin.Recovery())
 	engine.Use(logger.Logger())
 	engine.Use(notSupper.HasError())
@@ -47,7 +48,7 @@ func initDaemonService(engine *gin.Engine, serverCfg map[string]interface{}) {
 	engine.NoMethod(notSupper.NotSupper(&notSupperStr))
 	infoEntryPoint(engine)
 	routers.Execute(engine.Group("/v1"))
-	cache.FlushWhiteListCache(serverCfg["whiteList"].([]string))
+	cache.FlushWhiteListCache(config.GetByTarget(cfg,"whiteList").([]interface{}))
 	logger.Info("daemon service is ready ...")
 }
 

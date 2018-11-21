@@ -53,7 +53,7 @@ func startUpDaemonService(cfg map[string]interface{}) {
 	}
 	addrStr := fmt.Sprintf("%s:%s", addr, port)
 	logger.Info(fmt.Sprintf("daemon server will start in %s ", addrStr))
-	cli.StartUpDaemonService(&addrStr, nil)
+	cli.StartUpDaemonService(&addrStr, config.Get("custom"))
 }
 
 func multiServiceCfg(cfg map[string]interface{}) {

@@ -28,8 +28,12 @@ func init() {
 /**
 	刷新白名单缓存
  */
-func FlushWhiteListCache(list []string) {
-	whiteListCache = list
+func FlushWhiteListCache(list []interface{}) {
+	var paramSlice []string
+	for _, param := range list {
+		paramSlice = append(paramSlice, param.(string))
+	}
+	whiteListCache = paramSlice
 }
 
 /**
