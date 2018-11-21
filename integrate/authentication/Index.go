@@ -57,5 +57,5 @@ func GetBaseInfo(str string) (error, *ReqInfo) {
 	if 2 > len(url) {
 		return &exceptions.Error{Msg: "format Error - can't find server name", Code: 400}, nil
 	}
-	return nil, &ReqInfo{arr[0], url[1], strings.Join(url[2:], "/"), nil}
+	return nil, &ReqInfo{arr[0], url[1], arr[2],strings.Join(url[2:], "/"), nil}
 }

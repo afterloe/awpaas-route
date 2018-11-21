@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"log"
 	"strings"
+	"reflect"
 )
 
 var packageJson map[string]interface{}
@@ -47,11 +48,23 @@ func init() {
 }
 
 /**
- * 获取配置项
- *
- * @param key string 配置项key
- * @return interface{} 配置内容
+	获取配置项
+
+ 	@param key string 配置项key
+	@return interface{} 配置内容
  */
 func Get(key string) interface{} {
 	return packageJson[key]
+}
+
+/**
+	反射获取map配置
+ */
+func GetByTarget(target interface {}, key interface{}) interface{} {
+	v := reflect.ValueOf(target)
+	value := v.MapIndex(reflect.ValueOf(key))
+	if !value.IsValid() {
+		return nil
+	}
+	return value.Interface()
 }

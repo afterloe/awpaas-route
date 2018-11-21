@@ -27,6 +27,7 @@ func Test_QueryWhiteList(t *testing.T) {
 			return
 		}
 		addr = reply
+		flag = true
 		t.Log(reply)
 	})
 	t.Log(fmt.Sprintf("flag -> %v\t str -> %s", flag, addr))

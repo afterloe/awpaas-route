@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"../integrate/logger"
 	"../integrate/notSupper"
-	"../util"
-	"../config"
 	"../routers"
+	"../config"
+	"../service/cache"
 	"os"
 )
 
@@ -22,10 +22,25 @@ func init() {
 	启动守护进程
 
 */
-func StartUpDaemonService(addr *string, serverCfg map[string]interface{}) {
+func StartUpDaemonService(addr *string, cfg interface{}) {
 	gin.DisableConsoleColor()
 	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
+	initDaemonService(engine, cfg)
+	server := &http.Server{
+		Addr: *addr,
+		Handler: engine,
+		MaxHeaderBytes: 1 << 20,
+	}
+	e := server.ListenAndServe()
+	if nil != e {
+		logger.Error("server can't to run")
+		logger.Error(e.Error())
+		os.Exit(102)
+	}
+}
+
+func initDaemonService(engine *gin.Engine, cfg interface{}) {
 	engine.Use(gin.Recovery())
 	engine.Use(logger.Logger())
 	engine.Use(notSupper.HasError())
@@ -33,24 +48,10 @@ func StartUpDaemonService(addr *string, serverCfg map[string]interface{}) {
 	engine.NoMethod(notSupper.NotSupper(&notSupperStr))
 	infoEntryPoint(engine)
 	routers.Execute(engine.Group("/v1"))
-	server := &http.Server{
-		Addr: *addr,
-		Handler: engine,
-		MaxHeaderBytes: 1 << 20,
-	}
-
-	error := server.ListenAndServe()
+	cache.FlushWhiteListCache(config.GetByTarget(cfg,"whiteList").([]interface{}))
 	logger.Info("daemon service is ready ...")
-	if nil != error {
-		logger.Error("server can't to run")
-		logger.Error(error.Error())
-		os.Exit(102)
-	}
 }
 
 func infoEntryPoint(c *gin.Engine) {
-	info := config.Get("info").(map[string]interface{})
-	c.GET("/info", func(context *gin.Context) {
-		context.JSON(http.StatusOK, util.Success(info))
-	})
+	c.GET("/info", routers.Info)
 }
