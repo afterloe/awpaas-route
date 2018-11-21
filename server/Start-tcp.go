@@ -5,7 +5,6 @@ import (
 	"os"
 	"../integrate/logger"
 	"../integrate/authentication"
-	"../exceptions"
 	"../service/cache"
 	"fmt"
 	"bytes"
@@ -76,14 +75,17 @@ func doForwardConn(conn net.Conn) {
 		arr := strings.Split(string(buffer), "\r\n")
 		err, reqInfo := extractAuthInfo(arr) // 提取鉴权信息
 		if nil != err { // 如果提取出现异常，则跳转到异常界面
-			logger.Info("can't find authorize info.")
-			callDaemon(400, "can't%20find%20authorize%20info.", conn)
+			logger.Error("accept format exception")
+			callDaemon(400, "format%20exception", conn)
 			return
 		}
 		flag, remote := query_whiteList(reqInfo) // 查询白名单
 		if flag { // 在白名单之内，不需要鉴权即可访问
-			arr[1] = fmt.Sprintf("Host: %s", remote)
 			forward(reqInfo, remote, arr, conn)
+			return
+		} else {
+			logger.Info("can't find authorize info.")
+			callDaemon(400, "can't%20find%20authorize%20info.", conn)
 			return
 		}
 		err = query_authInfo(reqInfo) // 查询鉴权信息
@@ -98,7 +100,7 @@ func doForwardConn(conn net.Conn) {
 		} 
 		forward(reqInfo, remote, arr, conn)
 	} else { // 返回服务异常
-		logger.Info("has error")
+		logger.Error("has error")
 		callDaemon(400, "can't%20find%20authorize%20info.", conn)
 	}
 }
@@ -134,9 +136,6 @@ func callDaemon(code int, msg string, client net.Conn) {
  */
 func extractAuthInfo(arr []string) (error, *authentication.ReqInfo) {
 	token := authentication.GetTokenInfo(arr, key)
-	if !token.Flag {
-		return &exceptions.Error{Msg: "token is null", Code: 400}, nil
-	}
 	err, reqInfo := authentication.GetBaseInfo(arr[0]) // 获取请求的 server 名字 和 请求路径
 	if nil == err {
 		reqInfo.Token = token // 写入token信息
@@ -186,6 +185,8 @@ func query_mapList(req *authentication.ReqInfo) (error, string) {
   */
 func forward(req *authentication.ReqInfo, addr string, content []string, client net.Conn) {
 	remote, err := net.Dial("tcp", addr)
+	content[1] = fmt.Sprintf("Host: %s", addr) // TODO
+	content[0] = fmt.Sprintf("%s %s %s", req.Method, "/" + req.ReqUrl, req.Way)
 	defer remote.Close()
 	if nil != err {
 		logger.Info(err)
@@ -206,8 +207,8 @@ func forward(req *authentication.ReqInfo, addr string, content []string, client 
 */
 func linkAndConnection(content string, remote net.Conn, client net.Conn) {
 	remote.Write([]byte(content))
-	reciveBuf := receiveData(remote)
-	client.Write(reciveBuf)
+	receiveBuf := receiveData(remote)
+	client.Write(receiveBuf)
 }
 
 /**

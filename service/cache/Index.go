@@ -41,7 +41,7 @@ func FlushWhiteListCache(list []interface{}) {
  */
 func mapToAddress(serviceName string) string {
 	address := reflect.ValueOf(addressMap[serviceName])
-	if address.IsValid() {
+	if !address.IsValid() {
 		return address.String()
 	}
 	//return defAddr
@@ -53,7 +53,7 @@ func mapToAddress(serviceName string) string {
  */
 func inWhiteList(reqUrl string) bool {
 	for _, item := range whiteListCache {
-		if strings.ContainsAny(item, reqUrl) {
+		if strings.Contains(reqUrl, item) {
 			return true
 		}
 	}
