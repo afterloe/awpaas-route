@@ -152,7 +152,8 @@ func extractAuthInfo(arr []string) (error, *authentication.ReqInfo) {
 	@return: string - 映射的地址
 */
 func query_whiteList(req *authentication.ReqInfo) (bool, string) {
-	return cache.QueryWhiteList(req.ServerName)
+	return cache.QueryWhiteList(req.ServerName + "/" + req.ReqUrl,
+		req.ServerName)
 }
 
 /**

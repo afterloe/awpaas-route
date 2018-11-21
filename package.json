@@ -2,7 +2,8 @@
   "custom": {
     "tokenName": "access-token",
     "needToken": true,
-    "size": 8192
+    "size": 8192,
+    "whiteList": ["/member/login", "/fs/preview", "docker/images/json"]
   },
   "info": {
     "name": "awpaas-route",
