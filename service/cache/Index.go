@@ -12,6 +12,10 @@ func getCache(key string) interface{} {
 	return nil
 }
 
+func QueryServiceMap() {
+
+}
+
 func QueryWhiteList(service_name string) (bool, string) {
 	var (
 		addr = ""
@@ -23,7 +27,7 @@ func QueryWhiteList(service_name string) (bool, string) {
 			return
 		}
 		addr = reply
-		
+		flag = true
 	})
 	return flag, addr
 }

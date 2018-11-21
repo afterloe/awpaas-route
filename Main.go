@@ -7,6 +7,7 @@ import (
 	cli "./server"
 	"./integrate/logger"
 	"./config"
+	"reflect"
 )
 
 var (
@@ -62,14 +63,25 @@ func multiServiceCfg(cfg map[string]interface{}) {
 		return
 	}
 	if flg.(bool) {
-		coreNumber := cfg["num"]
-		if nil == coreNumber {
-			coreNumber = cpuNumber
-		} else if 0 >= coreNumber.(float64) {
-			coreNumber = cpuNumber
+		num := config.GetByTarget(cfg, "num")
+		var cpuNum = cpuNumber
+		if nil != num {
+			switch reflect.TypeOf(num).String() {
+			case "float64":
+				cpuNum = int(reflect.ValueOf(num).Float())
+				break
+			case "int":
+				cpuNum = int(reflect.ValueOf(num).Int())
+				break
+			default:
+				break
+			}
 		}
-		logger.Info(fmt.Sprintf("multi server model, server will use %v cpu", coreNumber))
-		runtime.GOMAXPROCS(int(coreNumber.(float64)) * 2) // 限制go 出去的数量
+		if 0 >= cpuNum {
+			cpuNum = cpuNumber
+		}
+		logger.Info(fmt.Sprintf("multi server model, server will use %v cpu", cpuNum))
+		runtime.GOMAXPROCS(cpuNum * 2) // 限制go 出去的数量
 	}
 }
 

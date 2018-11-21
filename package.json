@@ -17,7 +17,7 @@
       "port": "8080",
       "multiCore": {
         "enable": true,
-        "num": 4
+        "num": 0
       }
     },
     "daemon": {
