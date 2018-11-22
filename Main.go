@@ -29,6 +29,19 @@ func startDefault() {
 	cli.StartUpTCPServer(&defAddr, config.Get("custom").(map[string]interface{}))
 }
 
+func startUpCacheService(cfg map[string]interface{}) {
+	addr, port := cfg["addr"], cfg["port"]
+	if nil == addr {
+		addr = "127.0.0.1"
+	}
+	if nil == port {
+		port = "6379"
+	}
+	addrStr := fmt.Sprintf("%s:%s", addr, port)
+	logger.Info(fmt.Sprintf("cache server will listen to %s ", addrStr))
+	cli.StartUpCacheServer(&addrStr, cfg["channel"].([]interface{}))
+}
+
 func startUpGatewayService(cfg map[string]interface{}) {
 	addr, port := cfg["addr"], cfg["port"]
 	if nil == addr {
@@ -94,7 +107,8 @@ func main() {
 		startDefault()
 		return
 	}
-	go startUpDaemonService(serverCfg["daemon"].(map[string]interface{}))
-	go startUpGatewayService(serverCfg["gateway"].(map[string]interface{}))
+	go startUpCacheService(serverCfg["cache"].(map[string]interface{})) // 缓存线程
+	go startUpDaemonService(serverCfg["daemon"].(map[string]interface{})) // 守护线程
+	startUpGatewayService(serverCfg["gateway"].(map[string]interface{})) // 主线程
 	<-finish
 }
