@@ -2,6 +2,7 @@ package server
 
 import (
 	"../integrate/logger"
+	"../service/cache"
 	"github.com/gomodule/redigo/redis"
 	"fmt"
 	"strings"
@@ -13,6 +14,11 @@ func serviceDiscovery(action, key string) {
 
 func whiteListChange(action, key string) {
 	fmt.Printf("reflush white list %s %s\r\n", action, key)
+	switch action {
+	case "GET":
+		cache.GetWhiteListFromRemote(key)
+	}
+
 }
 
 func handleMessage(channel string, data []byte) {

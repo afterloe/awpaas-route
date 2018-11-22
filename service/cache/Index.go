@@ -76,20 +76,17 @@ func getCache(key string) interface{} {
 	return nil
 }
 
-func QueryServiceMap() (bool, string) {
-	var (
-		addr = ""
-		flag = false
-	)
+func GetWhiteListFromRemote(key string) bool {
+	var flag = false
 	getConn(func(conn redis.Conn) {
-		reply, err := redis.String(conn.Do("GET", "whiteList"))
+		reply, err := redis.String(conn.Do("GET", key))
 		if nil != err {
 			return
 		}
-		addr = reply
 		flag = true
+		fmt.Println(reply)
 	})
-	return flag, addr
+	return flag
 }
 
 func getConn(exec Callback) {
