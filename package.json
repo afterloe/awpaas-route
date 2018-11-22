@@ -3,7 +3,8 @@
     "tokenName": "access-token",
     "needToken": true,
     "size": 8192,
-    "whiteList": ["/member/login", "/fs/preview", "docker/images/json"]
+    "whiteList": ["/member/login", "/fs/preview"],
+    "authorizedServcieName": "authorize"
   },
   "info": {
     "name": "awpaas-route",
@@ -24,12 +25,19 @@
     "daemon": {
       "addr": "127.0.0.1",
       "port": "8081"
+    },
+    "cache": {
+      "addr": "127.0.0.1",
+      "port": "6379",
+      "channel": ["serviceDiscovery", "whiteListChange"],
+      "uname": "ascs",
+      "pwd": "ascs.tech"
     }
   },
   "dependencies": {
     "github.com/docker/docker": "laster",
     "golang.org/x/net/context": "laster",
-    "github.com/garyburd/redigo/redis" : "laster",
+    "github.com/gomodule/redigo" : "laster",
     "github.com/gin-gonic/gin": "laster"
   },
   "services": {
