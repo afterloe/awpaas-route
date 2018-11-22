@@ -86,13 +86,14 @@ func doForwardConn(conn net.Conn) {
 			forward(reqInfo, remote, arr, conn)
 			return
 		} 
-		if !reqInfo.Token.Flag { // 不再白名单之内则，又不存在token信息则报错
+		if !reqInfo.Token.Flag { // 不在白名单之内则，又不存在token信息则报错
 			logger.Info("can't find authorize info.")
 			callDaemon(400, "can't%20find%20authorize%20info.", conn)
 			return
 		}
 		if nil != query_authInfo(reqInfo) { // 查询鉴权信息
 			logger.Info("authentication information query failed.")
+			callDaemon(401, "can't%20find%20authorize%20info.", conn)
 			return
 		}
 		flag, remote = cache.MapToAddress(reqInfo.ServerName) // 查询服务映射表
