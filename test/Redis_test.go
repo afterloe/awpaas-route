@@ -5,6 +5,7 @@ import (
 	"testing"
 	"../integrate/logger"
 	"github.com/gomodule/redigo/redis"
+	"strings"
 )
 
 type Callback func(redis.Conn)
@@ -15,22 +16,19 @@ func getCache(key string) interface{} {
 }
 
 func Test_QueryWhiteList(t *testing.T) {
-	var (
-		addr = ""
-		flag = false
-	)
 	t.Log("begin to Test.")
 	getConn(func(conn redis.Conn) {
 		conn.Flush()
-		reply, err := redis.String(conn.Do("GET", "whiteList"))
+		reply, err := redis.String(conn.Do("GET", "w"))
 		if nil != err {
 			return
 		}
-		addr = reply
-		flag = true
+		list := strings.Split(reply, "\\t\\n")
+		for _, item := range list {
+			t.Log(item)
+		}
 		t.Log(reply)
 	})
-	t.Log(fmt.Sprintf("flag -> %v\t str -> %s", flag, addr))
 }
 
 func getConn(exec Callback) {

@@ -44,8 +44,7 @@ func mapToAddress(serviceName string) string {
 	if !address.IsValid() {
 		return address.String()
 	}
-	//return defAddr
-	return "127.0.0.1:11000"
+	return defAddr
 }
 
 /**
@@ -71,9 +70,8 @@ func QueryWhiteList(url ,serviceName string) (bool, string) {
 	return flag, mapToAddress(serviceName)
 }
 
-func getCache(key string) interface{} {
-
-	return nil
+func GetWhiteListFromDisk() interface{} {
+	return whiteListCache
 }
 
 func GetWhiteListFromRemote(key string) bool {
@@ -84,7 +82,8 @@ func GetWhiteListFromRemote(key string) bool {
 			return
 		}
 		flag = true
-		fmt.Println(reply)
+		list := strings.Split(reply, "\\t\\n")
+		whiteListCache = list
 	})
 	return flag
 }
