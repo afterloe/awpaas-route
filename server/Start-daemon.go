@@ -48,7 +48,7 @@ func initDaemonService(engine *gin.Engine, cfg interface{}) {
 	engine.NoMethod(notSupper.NotSupper(&notSupperStr))
 	infoEntryPoint(engine)
 	routers.Execute(engine.Group("/v1"))
-	cache.FlushWhiteListCache(config.GetByTarget(cfg,"whiteList").([]interface{}))
+	cache.LoadCache(config.GetByTarget(cfg,"whiteList").([]interface{}))
 	logger.Info("daemon service is ready ...")
 }
 

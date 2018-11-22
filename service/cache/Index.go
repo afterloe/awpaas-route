@@ -13,6 +13,7 @@ var (
 	whiteListCache []string
 	addressMap map[string]string
 	defAddr string
+	whiteListKey string
 )
 
 func init() {
@@ -22,12 +23,22 @@ func init() {
 	defAddr = fmt.Sprintf("%s:%s",
 		config.GetByTarget(gateway, "addr"),
 		config.GetByTarget(gateway, "port"))
+	whiteListKey = "whiteList"
+}
+
+func LoadCache(list []interface{}) {
+	GetAddressMapFromRemote("addrMap")
+	flag := GetWhiteListFromRemote("whiteList")
+	if !flag || 0 == len(whiteListCache) {
+		flushWhiteListCache(list)
+		SendWhiteListToRemote(whiteListKey)
+	}
 }
 
 /**
 	刷新白名单缓存
  */
-func FlushWhiteListCache(list []interface{}) {
+func flushWhiteListCache(list []interface{}) {
 	var paramSlice []string
 	for _, param := range list {
 		paramSlice = append(paramSlice, param.(string))
@@ -77,8 +88,8 @@ func GetWhiteListFromDisk() interface{} {
 	return whiteListCache
 }
 
-func GetAddMapFromRemote(key string) bool {
-	reply, err := redis.StringMap(actionToRemote("HGETALL", key))
+func GetAddressMapFromRemote(key string) bool {
+	reply, err := redis.StringMap(toRemote("HGETALL", key))
 	if nil != err {
 		return false
 	}
@@ -87,7 +98,7 @@ func GetAddMapFromRemote(key string) bool {
 }
 
 func GetWhiteListFromRemote(key string) bool {
-	reply, err := redis.String(actionToRemote("GET", key))
+	reply, err := redis.String(toRemote("GET", key))
 	content, err := redis.String(reply, err)
 	if nil != err {
 		return false
@@ -97,12 +108,18 @@ func GetWhiteListFromRemote(key string) bool {
 	return true
 }
 
-func actionToRemote(action, key string) (interface{}, error) {
+func SendWhiteListToRemote(key string) {
+	content := strings.Join(whiteListCache, "\\t\\n")
+	reply, _ := redis.String(toRemote("SET", key, content))
+	logger.Info(reply)
+}
+
+func toRemote(action string, key ...interface{}) (interface{}, error) {
 	conn, err := redis.Dial("tcp", "127.0.0.1:6379")
 	defer conn.Close()
 	if nil != err {
 		logger.Error("can't connect redis service")
 		return nil, err
 	}
-	return conn.Do(action, key)
+	return conn.Do(action, key...)
 }
