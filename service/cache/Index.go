@@ -9,7 +9,6 @@ import (
 	"fmt"
 )
 
-type Callback func(redis.Conn)
 var (
 	whiteListCache []string
 	addressMap map[string]string
@@ -70,30 +69,40 @@ func QueryWhiteList(url ,serviceName string) (bool, string) {
 	return flag, mapToAddress(serviceName)
 }
 
+func GetAddMapFromDisk() interface{} {
+	return addressMap
+}
+
 func GetWhiteListFromDisk() interface{} {
 	return whiteListCache
 }
 
-func GetWhiteListFromRemote(key string) bool {
-	var flag = false
-	getConn(func(conn redis.Conn) {
-		reply, err := redis.String(conn.Do("GET", key))
-		if nil != err {
-			return
-		}
-		flag = true
-		list := strings.Split(reply, "\\t\\n")
-		whiteListCache = list
-	})
-	return flag
+func GetAddMapFromRemote(key string) bool {
+	reply, err := redis.StringMap(actionToRemote("HGETALL", key))
+	if nil != err {
+		return false
+	}
+	addressMap = reply
+	return true
 }
 
-func getConn(exec Callback) {
-	c, err := redis.Dial("tcp", "127.0.0.1:6379")
+func GetWhiteListFromRemote(key string) bool {
+	reply, err := redis.String(actionToRemote("GET", key))
+	content, err := redis.String(reply, err)
+	if nil != err {
+		return false
+	}
+	list := strings.Split(content, "\\t\\n")
+	whiteListCache = list
+	return true
+}
+
+func actionToRemote(action, key string) (interface{}, error) {
+	conn, err := redis.Dial("tcp", "127.0.0.1:6379")
+	defer conn.Close()
 	if nil != err {
 		logger.Error("can't connect redis service")
-		return
+		return nil, err
 	}
-	defer c.Close()
-	defer exec(c)
+	return conn.Do(action, key)
 }

@@ -10,5 +10,6 @@ import (
 func Execute(route *gin.RouterGroup) {
 	route.GET("/", Home)
 	route.GET("/whiteList", WhiteList)
+	route.GET("/serviceMap", ServiceMap)
 	route.Any("/tips/:code", Tips)
 }

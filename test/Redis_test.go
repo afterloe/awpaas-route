@@ -10,12 +10,21 @@ import (
 
 type Callback func(redis.Conn)
 
-func getCache(key string) interface{} {
-
-	return nil
+func Test_QueryHash(t *testing.T) {
+	t.Log("begin to Test.")
+	getConn(func(conn redis.Conn) {
+		conn.Flush()
+		reply, err := redis.StringMap(conn.Do("HGETALL", "addrMap"))
+		if nil != err {
+			return
+		}
+		for key,val := range reply {
+			t.Log(fmt.Sprintf("%s -> %s", key, val))
+		}
+	})
 }
 
-func Test_QueryWhiteList(t *testing.T) {
+func test_QueryWhiteList(t *testing.T) {
 	t.Log("begin to Test.")
 	getConn(func(conn redis.Conn) {
 		conn.Flush()
