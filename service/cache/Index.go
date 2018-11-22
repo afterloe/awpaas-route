@@ -47,6 +47,17 @@ func flushWhiteListCache(list []interface{}) {
 }
 
 /**
+	对外 服务名地址映射
+*/
+func MapToAddress(serviceName string) (bool, string) {
+	address := reflect.ValueOf(addressMap[serviceName])
+	if !address.IsValid() {
+		return true, address.String()
+	}
+	return false, ""
+}
+
+/**
 	服务名地址映射
  */
 func mapToAddress(serviceName string) string {
@@ -112,6 +123,7 @@ func SendWhiteListToRemote(key string) {
 	content := strings.Join(whiteListCache, "\\t\\n")
 	reply, _ := redis.String(toRemote("SET", key, content))
 	logger.Info(reply)
+	toRemote("PUBLISH", "whiteListChange", "GET\t\n"+ whiteListKey)
 }
 
 func toRemote(action string, key ...interface{}) (interface{}, error) {

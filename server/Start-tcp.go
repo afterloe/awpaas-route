@@ -6,6 +6,8 @@ import (
 	"../integrate/logger"
 	"../integrate/authentication"
 	"../service/cache"
+	"../service/authorize"
+	"../exceptions"
 	"fmt"
 	"bytes"
 	"io"
@@ -83,24 +85,26 @@ func doForwardConn(conn net.Conn) {
 		if flag { // 在白名单之内，不需要鉴权即可访问
 			forward(reqInfo, remote, arr, conn)
 			return
-		} else {
+		} 
+		if !reqInfo.Token.Flag { // 不在白名单之内则，又不存在token信息则报错
 			logger.Info("can't find authorize info.")
 			callDaemon(400, "can't%20find%20authorize%20info.", conn)
 			return
 		}
-		err = query_authInfo(reqInfo) // 查询鉴权信息
-		if nil != err {
+		if nil != query_authInfo(reqInfo) { // 查询鉴权信息
 			logger.Info("authentication information query failed.")
+			callDaemon(401, "can't%20find%20authorize%20info.", conn)
 			return
 		}
-		err, remote = query_mapList(reqInfo) // 查询服务映射表
-		if nil != err { // 服务列表未查询到
+		flag, remote = cache.MapToAddress(reqInfo.ServerName) // 查询服务映射表
+		if !flag { // 服务列表未查询到
 			logger.Info("service not found.")
+			callDaemon(404, "can't%20find%20" + reqInfo.ServerName + "%20info.", conn)
 			return
 		} 
 		forward(reqInfo, remote, arr, conn)
 	} else { // 返回服务异常
-		logger.Error("has error")
+		logger.Error("accept error.")
 		callDaemon(400, "can't%20find%20authorize%20info.", conn)
 	}
 }
@@ -162,18 +166,19 @@ func query_whiteList(req *authentication.ReqInfo) (bool, string) {
 	@return: error - 鉴权错误信息
  */
 func query_authInfo(info *authentication.ReqInfo) error {
+	var (
+		token = info.Token.Value
+		serviceName = info.ServerName
+		url = info.ReqUrl
+		requestURI = serviceName + "/" + url
+	)
+	flag, uid := authorize.QueryAuthorizeInfo(token, serviceName, url)
+	if !flag {
+		logger.Info(fmt.Sprintf("[failed] - %s access %s", token, requestURI))
+		return &exceptions.Error{Msg: "token is error", Code: 400}
+	}
+	logger.Info(fmt.Sprintf("[success] - %s access %s", uid, requestURI))
 	return nil
-}
-
-/**
-	查询服务映射表
-
-	@param: reqInfo - 请求信息
-	@return: error - 异常信息
-	@return: string - 服务映射的实际地址
-*/
-func query_mapList(req *authentication.ReqInfo) (error, string) {
-	return nil, ""
 }
 
 /**
@@ -185,9 +190,9 @@ func query_mapList(req *authentication.ReqInfo) (error, string) {
   */
 func forward(req *authentication.ReqInfo, addr string, content []string, client net.Conn) {
 	remote, err := net.Dial("tcp", addr)
-	content[1] = fmt.Sprintf("Host: %s", addr) // TODO
-	content[0] = fmt.Sprintf("%s %s %s", req.Method, "/" + req.ReqUrl, req.Way)
 	defer remote.Close()
+	content[1] = fmt.Sprintf("Host: %s", addr) 
+	content[0] = fmt.Sprintf("%s %s %s", req.Method, "/" + req.ReqUrl, req.Way)
 	if nil != err {
 		logger.Info(err)
 		return
