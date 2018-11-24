@@ -22,8 +22,22 @@ func ServiceMapAppend(context *gin.Context) {
 	err := cache.AppendAddrMap(serviceName, serviceAddr)
 	if nil != err {
 		context.JSON(http.StatusInternalServerError, util.Error(err))
-		// context.JSON(http.StatusInternalServerError, util.Fail(400, "parameter is error"))
 		return
 	}
 	context.JSON(http.StatusOK, util.Success("append success"))
+}
+
+func ServiceMapModify(context *gin.Context) {
+	serviceName := context.PostForm("serviceName")
+	serviceAddr := context.PostForm("serviceAddr")
+	if "" == serviceName || "" == serviceAddr {
+		context.JSON(http.StatusBadRequest, util.Fail(400, "lack parameter -> serviceName serviceAddr"))
+		return
+	}
+	err := cache.ModifyAddrMap(serviceName, serviceAddr)
+	if nil != err {
+		context.JSON(http.StatusInternalServerError, util.Error(err))
+		return
+	}
+	context.JSON(http.StatusOK, util.Success("modify success"))
 }

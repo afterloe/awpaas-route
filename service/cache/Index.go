@@ -189,3 +189,15 @@ func AppendAddrMap(serviceName, serviceAddr string) error {
 	SendAddrMapToRemote(addrMapKey)
 	return nil
 }
+
+func ServiceMapModify(serviceName, serviceAddr string) error {
+	v := reflect.ValueOf(addressMap)
+	key := reflect.ValueOf(serviceName)
+	value := v.MapIndex(key)
+	if !value.IsValid() {
+		return &exceptions.Error{Code: 400, Msg: "service not registry."}
+	}
+	v.SetMapIndex(key, reflect.ValueOf(serviceAddr))
+	SendAddrMapToRemote(addrMapKey)
+	return nil
+}
