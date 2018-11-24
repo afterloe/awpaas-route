@@ -179,11 +179,13 @@ func SendAddrMapToRemote(key string) {
 }
 
 func AppendAddrMap(serviceName, serviceAddr string) error {
-	address := reflect.ValueOf(addressMap[serviceName])
-	if address.IsValid() {
+	v := reflect.ValueOf(addressMap)
+	key := reflect.ValueOf(serviceName)
+	value := v.MapIndex(key)
+	if value.IsValid() {
 		return &exceptions.Error{Code: 400, Msg: "service has been added."}
 	}
-	addressMap[serviceName] = serviceAddr
+	v.SetMapIndex(key, reflect.ValueOf(serviceAddr))
 	SendAddrMapToRemote(addrMapKey)
 	return nil
 }

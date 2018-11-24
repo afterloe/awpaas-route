@@ -5,7 +5,6 @@ import (
 	"../util"
 	"../service/cache"
 	"net/http"
-	"../exceptions"
 )
 
 func ServiceMap(context *gin.Context) {
@@ -21,9 +20,9 @@ func ServiceMapAppend(context *gin.Context) {
 		return
 	}
 	err := cache.AppendAddrMap(serviceName, serviceAddr)
-	if err {
-		err = err.(exceptions.Error)
-		context.JSON(http.StatusInternalServerError, util.Fail(err.Code, err.Msg))
+	if nil != err {
+		context.JSON(http.StatusInternalServerError, util.Error(err))
+		// context.JSON(http.StatusInternalServerError, util.Fail(400, "parameter is error"))
 		return
 	}
 	context.JSON(http.StatusOK, util.Success("append success"))
