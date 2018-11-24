@@ -135,3 +135,14 @@ func toRemote(action string, key ...interface{}) (interface{}, error) {
 	}
 	return conn.Do(action, key...)
 }
+
+func AppednItem(item string) bool {
+	for _, i := range whiteListCache {
+		if i == item {
+			return false
+		}
+	}
+	whiteListCache = append(whiteListCache, item)
+	SendWhiteListToRemote(whiteListKey)
+	return true
+}

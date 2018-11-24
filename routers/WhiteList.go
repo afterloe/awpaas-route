@@ -7,11 +7,27 @@ import (
 	"net/http"
 )
 
-func WhiteList(c *gin.Context) {
+/**
+	获取白名单列表
+*/
+func WhiteList(content *gin.Context) {
 	whiteList := cache.GetWhiteListFromDisk()
-	c.JSON(http.StatusOK, util.Success(whiteList))
+	content.JSON(http.StatusOK, util.Success(whiteList))
 }
 
-func WhiteListAppend(c *gin.Context) {
-	
+/**
+	添加一条进入白名单
+*/
+func WhiteListAppend(content *gin.Context) {
+	item := content.PostForm("item")
+	if "" == item {
+		content.JSON(http.StatusBadRequest, util.Fail(400, "lack parameter -> item"))
+		return
+	}
+	flag := cache.AppednItem(item)
+	if flag {
+		content.JSON(http.StatusOK, util.Success("append success"))
+		return
+	}
+	content.JSON(http.StatusInternalServerError, util.Fail(500, "know error."))
 }
