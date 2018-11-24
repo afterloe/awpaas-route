@@ -5,6 +5,7 @@ import (
 	"strings"
 	"reflect"
 	"../../config"
+	"../../exceptions"
 	"../../integrate/logger"
 	"fmt"
 )
@@ -14,6 +15,7 @@ var (
 	addressMap map[string]string
 	defAddr string
 	whiteListKey string
+	addrMapKey string
 )
 
 func init() {
@@ -24,6 +26,7 @@ func init() {
 		config.GetByTarget(gateway, "addr"),
 		config.GetByTarget(gateway, "port"))
 	whiteListKey = "whiteList"
+	addrMapKey = "serviceAddrMap"
 }
 
 func LoadCache(list []interface{}) {
@@ -152,7 +155,7 @@ func RemoveItem(item string) bool {
 	return true
 }
 
-func AppednItem(item string) bool {
+func AppendItem(item string) bool {
 	for _, it := range whiteListCache {
 		if it == item {
 			return false
@@ -161,4 +164,26 @@ func AppednItem(item string) bool {
 	whiteListCache = append(whiteListCache, item)
 	SendWhiteListToRemote(whiteListKey)
 	return true
+}
+
+func SendAddrMapToRemote(key string) {
+	args := make([]interface{}, 0)
+	args = append(args, key)
+	for field, value := range addressMap {
+		args = append(args, field, value)
+	}
+	reply, err := redis.String(toRemote("HMSET", args...))
+	if nil != err || "OK" != reply {
+		logger.Error(err)
+	}
+}
+
+func AppendAddrMap(serviceName, serviceAddr string) error {
+	address := reflect.ValueOf(addressMap[serviceName])
+	if address.IsValid() {
+		return &exceptions.Error{Code: 400, Msg: "service has been added."}
+	}
+	addressMap[serviceName] = serviceAddr
+	SendAddrMapToRemote(addrMapKey)
+	return nil
 }

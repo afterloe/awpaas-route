@@ -13,7 +13,7 @@ func Execute(route *gin.RouterGroup) {
 	route.PUT("/whiteList", WhiteListAppend)
 	route.DELETE("/whiteList", WhiteListDel)
 	route.GET("/serviceMap", ServiceMap)
-	// route.PUT("/serviceMap", ServiceMapAppend)
+	route.POST("/serviceMap", ServiceMapAppend)
 	// route.DELETE("/whiteList", ServiceMapDel)
 	route.Any("/tips/:code", Tips)
 }

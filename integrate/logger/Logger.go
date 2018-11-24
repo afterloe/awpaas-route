@@ -26,7 +26,7 @@ func GetFormatTime() string {
 	return time.Now().Format(timeFormat)
 }
 
-func Error(info string) {
+func Error(info interface{}) {
 	fmt.Fprintf(err, errorLayout, GetFormatTime(), info)
 }
 

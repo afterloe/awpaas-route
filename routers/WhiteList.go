@@ -24,7 +24,7 @@ func WhiteListAppend(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, util.Fail(400, "lack parameter -> item"))
 		return
 	}
-	flag := cache.AppednItem(item)
+	flag := cache.AppendItem(item)
 	if flag {
 		context.JSON(http.StatusOK, util.Success("append success"))
 		return
