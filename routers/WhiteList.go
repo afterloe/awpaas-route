@@ -11,3 +11,7 @@ func WhiteList(c *gin.Context) {
 	whiteList := cache.GetWhiteListFromDisk()
 	c.JSON(http.StatusOK, util.Success(whiteList))
 }
+
+func WhiteListAppend(c *gin.Context) {
+	
+}
