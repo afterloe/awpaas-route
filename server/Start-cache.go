@@ -26,7 +26,7 @@ func whiteListChange(action, key string) {
 
 func handleMessage(channel string, data []byte) {
 	// ACTION\t\nKEY
-	content := strings.Split(string(data), "\t\n")
+	content := strings.Split(string(data), "\\t\\n")
 	switch channel {
 	case "serviceDiscovery":
 		serviceDiscovery(content[0], content[1])

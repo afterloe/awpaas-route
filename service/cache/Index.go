@@ -128,7 +128,7 @@ func SendWhiteListToRemote(key string) {
 	content := strings.Join(whiteListCache, "\\t\\n")
 	reply, _ := redis.String(toRemote("SET", key, content))
 	logger.Info(reply)
-	toRemote("PUBLISH", "whiteListChange", "GET\t\n"+ whiteListKey)
+	toRemote("PUBLISH", "whiteListChange", "GET\\t\\n"+ whiteListKey)
 }
 
 func toRemote(action string, key ...interface{}) (interface{}, error) {
