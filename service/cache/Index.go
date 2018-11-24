@@ -207,7 +207,8 @@ func ModifyAddrMap(serviceName, serviceAddr string) error {
 		return &exceptions.Error{Code: 400, Msg: "service not registry."}
 	}
 	addressMap[serviceName] = serviceAddr
-	SendAddrMapToRemote(addrMapKey)
+	toRemote("HSET", addrMapKey, serviceName, serviceAddr)
+	toRemote("PUBLISH", "serviceDiscovery", "GET\\t\\n" + addrMapKey)
 	return nil
 }
 
@@ -217,6 +218,7 @@ func DelAddrMap(serviceName string) error {
 		return &exceptions.Error{Code: 400, Msg: "service not registry."}
 	}
 	delete(addressMap, serviceName)
-	SendAddrMapToRemote(addrMapKey)
+	toRemote("HDEL", addrMapKey, serviceName)
+	toRemote("PUBLISH", "serviceDiscovery", "GET\\t\\n" + addrMapKey)
 	return nil
 }
