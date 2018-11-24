@@ -148,7 +148,7 @@ func RemoveItem(item string) bool {
 		return false
 	}
 	whiteListCache = append(whiteListCache[:index], whiteListCache[index+1:]...)
-	fmt.Println(whiteListCache)
+	SendWhiteListToRemote(whiteListKey)
 	return true
 }
 
