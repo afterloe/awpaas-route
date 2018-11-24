@@ -136,9 +136,25 @@ func toRemote(action string, key ...interface{}) (interface{}, error) {
 	return conn.Do(action, key...)
 }
 
+func RemoveItem(item string) bool {
+	index := -1
+	for i, it := range whiteListCache {
+		if it == item {
+			index = i
+			break
+		}
+	}
+	if -1 == index {
+		return false
+	}
+	whiteListCache = append(whiteListCache[:index], whiteListCache[index+1:]...)
+	fmt.Println(whiteListCache)
+	return true
+}
+
 func AppednItem(item string) bool {
-	for _, i := range whiteListCache {
-		if i == item {
+	for _, it := range whiteListCache {
+		if it == item {
 			return false
 		}
 	}
