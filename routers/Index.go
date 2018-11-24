@@ -15,6 +15,6 @@ func Execute(route *gin.RouterGroup) {
 	route.GET("/serviceMap", ServiceMap)
 	route.POST("/serviceMap", ServiceMapAppend)
 	route.PUT("/serviceMap", ServiceMapModify)
-	route.DELETE("/whiteList", ServiceMapDel)
+	route.DELETE("/serviceMap", ServiceMapDel)
 	route.Any("/tips/:code", Tips)
 }
