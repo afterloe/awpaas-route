@@ -29,5 +29,5 @@ func WhiteListAppend(content *gin.Context) {
 		content.JSON(http.StatusOK, util.Success("append success"))
 		return
 	}
-	content.JSON(http.StatusInternalServerError, util.Fail(500, "know error."))
+	content.JSON(http.StatusInternalServerError, util.Fail(500, "item has been added."))
 }
