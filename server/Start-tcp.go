@@ -189,8 +189,11 @@ func query_authInfo(info *authentication.ReqInfo) error {
 	@param：client - 客户端链接
   */
 func forward(req *authentication.ReqInfo, addr string, content []string, client net.Conn) {
-	fmt.Println(addr)
 	remote, err := net.Dial("tcp", addr)
+	if nil != err {
+		callDaemon(502, "service%20inaccessibility", client)
+		return
+	}
 	defer remote.Close()
 	content[1] = fmt.Sprintf("Host: %s", addr) 
 	content[0] = fmt.Sprintf("%s %s %s", req.Method, "/" + req.ReqUrl, req.Way)
