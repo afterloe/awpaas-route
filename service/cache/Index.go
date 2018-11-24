@@ -190,7 +190,7 @@ func AppendAddrMap(serviceName, serviceAddr string) error {
 	return nil
 }
 
-func ServiceMapModify(serviceName, serviceAddr string) error {
+func ModifyAddrMap(serviceName, serviceAddr string) error {
 	v := reflect.ValueOf(addressMap)
 	key := reflect.ValueOf(serviceName)
 	value := v.MapIndex(key)
@@ -198,6 +198,17 @@ func ServiceMapModify(serviceName, serviceAddr string) error {
 		return &exceptions.Error{Code: 400, Msg: "service not registry."}
 	}
 	v.SetMapIndex(key, reflect.ValueOf(serviceAddr))
+	SendAddrMapToRemote(addrMapKey)
+	return nil
+}
+
+func DelAddrMap(serviceName string) error {
+	v := reflect.ValueOf(addressMap)
+	value := v.MapIndex(reflect.ValueOf(serviceName))
+	if !value.IsValid() {
+		return &exceptions.Error{Code: 400, Msg: "service not registry."}
+	}
+	delete(addressMap, serviceName)
 	SendAddrMapToRemote(addrMapKey)
 	return nil
 }

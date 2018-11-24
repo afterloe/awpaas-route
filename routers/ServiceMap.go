@@ -5,6 +5,7 @@ import (
 	"../util"
 	"../service/cache"
 	"net/http"
+	"fmt"
 )
 
 func ServiceMap(context *gin.Context) {
@@ -40,4 +41,18 @@ func ServiceMapModify(context *gin.Context) {
 		return
 	}
 	context.JSON(http.StatusOK, util.Success("modify success"))
+}
+
+func ServiceMapDel(context *gin.Context) {
+	serviceName := context.DefaultQuery("serviceName", "unknow")
+	if "unknow" == serviceName {
+		context.JSON(http.StatusBadRequest, util.Fail(400, "lack parameter -> serviceName"))
+		return
+	}
+	err := cache.DelAddrMap(serviceName)
+	if nil != err {
+		context.JSON(http.StatusInternalServerError, util.Error(err))
+		return
+	}
+	context.JSON(http.StatusOK, util.Success(fmt.Sprintf("delete %s success", serviceName)))
 }
