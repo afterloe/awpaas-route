@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"fmt"
 	"net/http"
+	"../exceptions"
 )
 
 type responseDTO map[string]interface{}
@@ -16,6 +17,11 @@ func (res *responseDTO) String() string {
 
 func Success(data interface{}) *responseDTO {
 	return Build(data, http.StatusOK, nil)
+}
+
+func Error(point interface{}) *responseDTO {
+	p := point.(*exceptions.Error)
+	return Build(nil, p.Code, p.Msg)
 }
 
 func Fail(code int, msg string) *responseDTO {
