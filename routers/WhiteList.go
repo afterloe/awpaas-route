@@ -16,7 +16,7 @@ func WhiteList(context *gin.Context) {
 }
 
 /**
-	添加一条进入白名单
+	添加一条进入白名
 */
 func WhiteListAppend(context *gin.Context) {
 	item := context.PostForm("item")
@@ -29,12 +29,15 @@ func WhiteListAppend(context *gin.Context) {
 		context.JSON(http.StatusOK, util.Success("append success"))
 		return
 	}
-	context.JSON(http.StatusInternalServerError, util.Fail(500, "item has been added."))
+	context.JSON(http.StatusInternalServerError, util.Fail(400, "item has been added."))
 }
 
+/**
+	从白名单中删除一条
+*/
 func WhiteListDel(context *gin.Context) {
-	item := context.PostForm("item")
-	if "" == item {
+	item := context.DefaultQuery("item", "unknow")
+	if "unknow" == item {
 		context.JSON(http.StatusBadRequest, util.Fail(400, "lack parameter -> item"))
 		return
 	}
@@ -43,5 +46,5 @@ func WhiteListDel(context *gin.Context) {
 		context.JSON(http.StatusOK, util.Success("remove success"))
 		return
 	}
-	context.JSON(http.StatusInternalServerError, util.Fail(500, "item has been remove."))
+	context.JSON(http.StatusInternalServerError, util.Fail(400, "item has been remove."))
 }	
