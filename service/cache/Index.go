@@ -30,8 +30,8 @@ func init() {
 }
 
 func LoadCache(list []interface{}) {
-	GetAddressMapFromRemote("addrMap")
-	flag := GetWhiteListFromRemote("whiteList")
+	GetAddressMapFromRemote(addrMapKey)
+	flag := GetWhiteListFromRemote(whiteListKey)
 	if !flag || 0 == len(whiteListCache) {
 		flushWhiteListCache(list)
 		SendWhiteListToRemote(whiteListKey)
@@ -51,6 +51,7 @@ func flushWhiteListCache(list []interface{}) {
 
 /**
 	对外 服务名地址映射
+	TODO
 */
 func MapToAddress(serviceName string) (bool, string) {
 	address := reflect.ValueOf(addressMap[serviceName])
@@ -62,6 +63,7 @@ func MapToAddress(serviceName string) (bool, string) {
 
 /**
 	服务名地址映射
+	TODO
  */
 func mapToAddress(serviceName string) string {
 	address := reflect.ValueOf(addressMap[serviceName])
@@ -126,7 +128,7 @@ func SendWhiteListToRemote(key string) {
 	content := strings.Join(whiteListCache, "\\t\\n")
 	reply, _ := redis.String(toRemote("SET", key, content))
 	logger.Info(reply)
-	toRemote("PUBLISH", "whiteListChange", "GET\t\n"+ whiteListKey)
+	toRemote("PUBLISH", "whiteListChange", "GET\\t\\n"+ whiteListKey)
 }
 
 func toRemote(action string, key ...interface{}) (interface{}, error) {
@@ -178,37 +180,45 @@ func SendAddrMapToRemote(key string) {
 	}
 }
 
-func AppendAddrMap(serviceName, serviceAddr string) error {
+func inAddrMap(serviceName string) (bool, interface{}) {
 	v := reflect.ValueOf(addressMap)
 	key := reflect.ValueOf(serviceName)
 	value := v.MapIndex(key)
 	if value.IsValid() {
+		return true, value.Interface()
+	}
+	return false, ""
+}
+
+func AppendAddrMap(serviceName, serviceAddr string) error {
+	flag, _ := inAddrMap(serviceName)
+	if flag {
 		return &exceptions.Error{Code: 400, Msg: "service has been added."}
 	}
-	v.SetMapIndex(key, reflect.ValueOf(serviceAddr))
-	SendAddrMapToRemote(addrMapKey)
+	addressMap[serviceName] = serviceAddr
+	toRemote("HSET", addrMapKey, serviceName, serviceAddr)
+	toRemote("PUBLISH", "serviceDiscovery", "GET\\t\\n" + addrMapKey)
 	return nil
 }
 
 func ModifyAddrMap(serviceName, serviceAddr string) error {
-	v := reflect.ValueOf(addressMap)
-	key := reflect.ValueOf(serviceName)
-	value := v.MapIndex(key)
-	if !value.IsValid() {
+	flag, _ := inAddrMap(serviceName)
+	if !flag {
 		return &exceptions.Error{Code: 400, Msg: "service not registry."}
 	}
-	v.SetMapIndex(key, reflect.ValueOf(serviceAddr))
-	SendAddrMapToRemote(addrMapKey)
+	addressMap[serviceName] = serviceAddr
+	toRemote("HSET", addrMapKey, serviceName, serviceAddr)
+	toRemote("PUBLISH", "serviceDiscovery", "GET\\t\\n" + addrMapKey)
 	return nil
 }
 
 func DelAddrMap(serviceName string) error {
-	v := reflect.ValueOf(addressMap)
-	value := v.MapIndex(reflect.ValueOf(serviceName))
-	if !value.IsValid() {
+	flag, _ := inAddrMap(serviceName)
+	if !flag {
 		return &exceptions.Error{Code: 400, Msg: "service not registry."}
 	}
 	delete(addressMap, serviceName)
-	SendAddrMapToRemote(addrMapKey)
+	toRemote("HDEL", addrMapKey, serviceName)
+	toRemote("PUBLISH", "serviceDiscovery", "GET\\t\\n" + addrMapKey)
 	return nil
 }
