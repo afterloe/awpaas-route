@@ -86,7 +86,7 @@ func doForwardConn(conn net.Conn) {
 			forward(reqInfo, remote, arr, conn)
 			return
 		} 
-		if !reqInfo.Token.Flag { // 不在白名单之内则，又不存在token信息则报错
+		if !reqInfo.Token.Flag { // 不在白名单之内，又不存在token信息则报错
 			logger.Info("can't find authorize info.")
 			callDaemon(400, "can't%20find%20authorize%20info.", conn)
 			return
@@ -189,6 +189,7 @@ func query_authInfo(info *authentication.ReqInfo) error {
 	@param：client - 客户端链接
   */
 func forward(req *authentication.ReqInfo, addr string, content []string, client net.Conn) {
+	fmt.Println(addr)
 	remote, err := net.Dial("tcp", addr)
 	defer remote.Close()
 	content[1] = fmt.Sprintf("Host: %s", addr) 
