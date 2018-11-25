@@ -51,26 +51,24 @@ func flushWhiteListCache(list []interface{}) {
 
 /**
 	对外 服务名地址映射
-	TODO
 */
 func MapToAddress(serviceName string) (bool, string) {
-	address := reflect.ValueOf(addressMap[serviceName])
-	if !address.IsValid() {
-		return true, address.String()
+	flag, addr := inAddrMap(serviceName)
+	if flag {
+		return true, addr.(string)
 	}
 	return false, ""
 }
 
 /**
 	服务名地址映射
-	TODO
  */
 func mapToAddress(serviceName string) string {
-	address := reflect.ValueOf(addressMap[serviceName])
-	if !address.IsValid() {
-		return address.String()
+	flag, addr := MapToAddress(serviceName)
+	if !flag {
+		return defAddr
 	}
-	return defAddr
+	return addr
 }
 
 /**
