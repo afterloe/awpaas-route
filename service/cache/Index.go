@@ -131,11 +131,11 @@ func SendWhiteListToRemote(key string) {
 
 func toRemote(action string, key ...interface{}) (interface{}, error) {
 	conn, err := redis.Dial("tcp", "127.0.0.1:6379")
-	defer conn.Close()
 	if nil != err {
 		logger.Error("can't connect redis service")
 		return nil, err
 	}
+	defer conn.Close()
 	return conn.Do(action, key...)
 }
 
