@@ -1,23 +1,36 @@
 "use strict";
 
-class Header extends React.Component {
-    constructor(props) {
-        super(props);
-    }
+const systemMenu = [{
+    name: "首页",
+    icon: "images/home.svg",
+    isClick: true
+}, {
+    name: "白名单管理",
+    icon: "images/file.svg"
+}, {
+    name: "服务注册列表",
+    icon: "images/layers.svg"
+}, {
+    name: "活跃用户",
+    icon: "images/users.svg"
+}, {
+    name: "网关状态",
+    icon: "images/bar-chart-2.svg"
+}];
+const linkMenu = [{
+    name: "统一管理子系统",
+    href: "https://127.0.0.1:8088"
+}, {
+    name: "统一认证及审计子系统",
+    href: "https://127.0.0.1:8088"
+}, {
+    name: "蜂窝式数据仓库管理子系统",
+    href: "https://127.0.0.1:8088"
+}, {
+    name: "数据采集清洗引擎",
+    href: "https://127.0.0.1:8088"
+}];
 
-    render() {
-        return (
-            <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-                <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">前置数据网关</a>
-                <input class="form-control form-control-dark w-100" type="text" placeholder="搜索" aria-label="搜索">
-                    <ul class="navbar-nav px-3">
-                        <li class="nav-item text-nowrap">
-                            <a class="nav-link" href="#">登出</a>
-                        </li>
-                    </ul>
-            </nav>
-        )
-    }
-}
-        
-ReactDOM.render(<Header />, document.getElementById("head")
+ReactDOM.render(<NavLeft menu={systemMenu} links={linkMenu}/>, document.getElementById("nav-left"));
+ReactDOM.render(<Header name="前置数据网关" version="v1.0.3"/>, document.getElementById("head"));
+ReactDOM.render(<TotalMain />, document.getElementById("main"));
