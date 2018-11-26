@@ -4,12 +4,19 @@ class NavLeft extends React.Component {
     constructor(props) {
         super(props);
         this.state = props;
+        this.clickItem = this.clickItem.bind(this);
+    }
+
+    clickItem(event) {
+        const key = event.currentTarget.getAttribute("data-index") || "";
+        if ("" === key) return;
+        alert(key);
     }
 
     renderMenu() {
         const {menu = []} = this.state;
         return menu.map(it => (
-            <li class="nav-item">
+            <li class="nav-item" onClick={this.clickItem} data-index={it.index}>
                 <a class={it.isClick? "nav-link active":"nav-link"} href="#">
                     <embed src={it.icon} width="16" height="16" type="image/svg+xml"/>
                     {it.name} {it.isClick? (<span class="sr-only">(current)</span>): ""}

@@ -3,19 +3,24 @@
 const systemMenu = [{
     name: "首页",
     icon: "images/home.svg",
-    isClick: true
+    isClick: true,
+    index: "main"
 }, {
     name: "白名单管理",
-    icon: "images/file.svg"
+    icon: "images/file.svg",
+    index: "whilteManager"
 }, {
     name: "服务注册列表",
-    icon: "images/layers.svg"
+    icon: "images/layers.svg",
+    index: "serviceRegistry"
 }, {
     name: "活跃用户",
-    icon: "images/users.svg"
+    icon: "images/users.svg",
+    index: "busyUsers"
 }, {
     name: "网关状态",
-    icon: "images/bar-chart-2.svg"
+    icon: "images/bar-chart-2.svg",
+    index: "gatewayStatus"
 }];
 const linkMenu = [{
     name: "统一管理子系统",
