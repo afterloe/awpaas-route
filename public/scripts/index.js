@@ -3,19 +3,24 @@
 const systemMenu = [{
     name: "首页",
     icon: "images/home.svg",
-    isClick: true
+    isClick: true,
+    index: "main"
 }, {
     name: "白名单管理",
-    icon: "images/file.svg"
+    icon: "images/file.svg",
+    index: "whilteManager"
 }, {
     name: "服务注册列表",
-    icon: "images/layers.svg"
+    icon: "images/layers.svg",
+    index: "serviceRegistry"
 }, {
     name: "活跃用户",
-    icon: "images/users.svg"
+    icon: "images/users.svg",
+    index: "busyUsers"
 }, {
     name: "网关状态",
-    icon: "images/bar-chart-2.svg"
+    icon: "images/bar-chart-2.svg",
+    index: "gatewayStatus"
 }];
 const linkMenu = [{
     name: "统一管理子系统",
@@ -31,6 +36,35 @@ const linkMenu = [{
     href: "https://127.0.0.1:8088"
 }];
 
-ReactDOM.render(<NavLeft menu={systemMenu} links={linkMenu}/>, document.getElementById("nav-left"));
+class GateWay extends React.Component {
+    constructor(props) {
+        super(props);
+        const {menu} = props;
+        this.state = {menu};
+        this.clickItem = this.clickItem.bind(this);
+    }
+
+    clickItem(event) {
+        const key = event.currentTarget.getAttribute("data-index") || "";
+        if ("" === key) return;
+        this.setState(prevState => {
+            const {menu} = prevState;
+            return {ment: menu.map(it => {
+                it.isClick = key === it.index? true:false;
+                return it;
+            })}
+        });
+    }
+
+    render() {
+        return (
+            <div class="row">
+                <NavLeft menu={this.state.menu} links={this.props.links} clickItem={this.clickItem}/>
+                <TotalMain />
+            </div>
+        )
+    }
+}
+
 ReactDOM.render(<Header name="前置数据网关" version="v1.0.3"/>, document.getElementById("head"));
-ReactDOM.render(<TotalMain />, document.getElementById("main"));
+ReactDOM.render(<GateWay menu={systemMenu} links={linkMenu}/>, document.getElementById("app"))
