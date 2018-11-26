@@ -3,22 +3,12 @@
 class NavLeft extends React.Component {
     constructor(props) {
         super(props);
-        this.state = props;
-        this.clickItem = this.clickItem.bind(this);
-    }
-
-    clickItem(event) {
-        const key = event.currentTarget.getAttribute("data-index") || "";
-        // const k = key.getAgetAttribute("data-index") || "";
-        console.log(key)
-        // console.log(k)
-        if ("" === key) return;
     }
 
     renderMenu() {
-        const {menu = []} = this.state;
+        const {menu = []} = this.props;
         return menu.map(it => (
-            <li class="nav-item" onClick={this.clickItem} data-index={it.index}>
+            <li class="nav-item" onClick={this.props.clickItem} data-index={it.index}>
                 <a class={it.isClick? "nav-link active":"nav-link"} href="#">
                     <embed src={it.icon} width="16" height="16" type="image/svg+xml"/>
                     {it.name} {it.isClick? (<span class="sr-only">(current)</span>): ""}
@@ -28,7 +18,7 @@ class NavLeft extends React.Component {
     }
 
     renderLink() {
-        const {links = []} = this.state;
+        const {links = []} = this.props;
         return links.map(it => (
             <li class="nav-item">
                 <a class="nav-link" href={it.href}>

@@ -36,6 +36,30 @@ const linkMenu = [{
     href: "https://127.0.0.1:8088"
 }];
 
-ReactDOM.render(<NavLeft menu={systemMenu} links={linkMenu}/>, document.getElementById("nav-left"));
+class GateWay extends React.Component {
+    constructor(props) {
+        super(props);
+        const {menu} = props;
+        this.state = {menu};
+        this.clickItem = this.clickItem.bind(this);
+    }
+
+    clickItem(event) {
+        const key = event.currentTarget.getAttribute("data-index") || "";
+        if ("" === key) return;
+        // TODO 切换
+        alert(key)
+    }
+
+    render() {
+        return (
+            <div class="row">
+                <NavLeft menu={this.state.menu} links={this.props.links} clickItem={this.clickItem}/>
+                <TotalMain />
+            </div>
+        )
+    }
+}
+
 ReactDOM.render(<Header name="前置数据网关" version="v1.0.3"/>, document.getElementById("head"));
-ReactDOM.render(<TotalMain />, document.getElementById("main"));
+ReactDOM.render(<GateWay menu={systemMenu} links={linkMenu}/>, document.getElementById("app"))

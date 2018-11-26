@@ -48,7 +48,7 @@ class TotalMain extends React.Component {
 
     render() {
         return (
-            <main>
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
                 <div class="chartjs-size-monitor">
                     <div class="chartjs-size-monitor-expand">
                         <div></div>
