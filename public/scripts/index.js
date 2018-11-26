@@ -47,8 +47,13 @@ class GateWay extends React.Component {
     clickItem(event) {
         const key = event.currentTarget.getAttribute("data-index") || "";
         if ("" === key) return;
-        // TODO 切换
-        alert(key)
+        this.setState(prevState => {
+            const {menu} = prevState;
+            return {ment: menu.map(it => {
+                it.isClick = key === it.index? true:false;
+                return it;
+            })}
+        });
     }
 
     render() {
