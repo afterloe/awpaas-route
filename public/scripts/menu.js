@@ -9,8 +9,10 @@ class NavLeft extends React.Component {
 
     clickItem(event) {
         const key = event.currentTarget.getAttribute("data-index") || "";
+        // const k = key.getAgetAttribute("data-index") || "";
+        console.log(key)
+        // console.log(k)
         if ("" === key) return;
-        alert(key);
     }
 
     renderMenu() {
