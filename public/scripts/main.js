@@ -1,29 +1,54 @@
 "use strict";
 
+const labels = ["周天", "周一", "周二", "周三", "周四", "周五", "周六"];
+const requestTotal = [23, 233, 122, 309, 177, 133, 12];
+const cpuTotal = [3, 12, 20, 12, 45, 124, 18];
+const reqRank = [{name: "docker", url: "user/images/json", count: "50002", trend: "-"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "-"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "UP"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "DOWN"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "DOWN"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "-"}];
+
 class TotalMain extends React.Component {
     constructor(props) {
         super(props);
-
+        this.state = {}; // 初始化数据
     }
 
     componentDidMount() {
-        TotalMain.loadChart() // 绘制流量报表
+        // 拉取数据
+        TotalMain.loadChart(requestTotal, cpuTotal); // 绘制流量报表
+        this.setState({rank: reqRank})
     }
 
-    static loadChart() {
+    renderRequestRank() {
+        const {rank = []} = this.state;
+        return rank.map((it, i) => (
+            <tr>
+                <td>{i}</td>
+                <td>{it.name}</td>
+                <td>{it.url}</td>
+                <td>{it.count}</td>
+                <td>{it.trend}</td>
+            </tr>
+        ));
+    }
+
+    static loadChart(requestTotal, cpuTotal) {
         new Chart(document.getElementById("myChart"), {
             type: 'line',
             data: {
-                labels: ["周天", "周一", "周二", "周三", "周四", "周五", "周六"],
+                labels,
                 datasets: [{
-                    data: [23, 233, 122, 309, 177, 133, 12],
+                    data: requestTotal,
                     lineTension: 0,
                     backgroundColor: 'transparent',
                     borderColor: '#f94d00', // 线条颜色
                     borderWidth: 4,
                     pointBackgroundColor: '#f94d00' // 提示颜色
                 }, {
-                    data: [123, 333, 222, 409, 277, 233, 112],
+                    data: cpuTotal,
                     lineTension: 0,
                     backgroundColor: 'transparent',
                     borderColor: '#4f86f7', // 线条颜色
@@ -58,7 +83,7 @@ class TotalMain extends React.Component {
                     </div>
                 </div>
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">流量</h1>
+                    <h1 class="h2">网关流量</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
                         <div class="btn-group mr-2">
                             <button class="btn btn-sm btn-outline-secondary">分享</button>
@@ -91,43 +116,7 @@ class TotalMain extends React.Component {
                             <th>趋势</th>
                         </tr>
                         </thead>
-                        <tbody>
-                        <tr>
-                            <td>1,001</td>
-                            <td>docker</td>
-                            <td>user/images/json</td>
-                            <td>50002</td>
-                            <td>-</td>
-                        </tr>
-                        <tr>
-                            <td>1,002</td>
-                            <td>docker</td>
-                            <td>user/images/json</td>
-                            <td>45020</td>
-                            <td>down</td>
-                        </tr>
-                        <tr>
-                            <td>1,003</td>
-                            <td>docker</td>
-                            <td>user/images/json</td>
-                            <td>33210</td>
-                            <td>up</td>
-                        </tr>
-                        <tr>
-                            <td>1,003</td>
-                            <td>docker</td>
-                            <td>user/images/json</td>
-                            <td>11000</td>
-                            <td>down</td>
-                        </tr>
-                        <tr>
-                            <td>1,004</td>
-                            <td>docker</td>
-                            <td>user/images/json</td>
-                            <td>3000</td>
-                            <td>-</td>
-                        </tr>
-                        </tbody>
+                        <tbody>{this.renderRequestRank()}</tbody>
                     </table>
                 </div>
             </main>

@@ -8,7 +8,7 @@ const systemMenu = [{
 }, {
     name: "白名单管理",
     icon: "images/file.svg",
-    index: "whilteManager"
+    index: "whiteManager"
 }, {
     name: "服务注册列表",
     icon: "images/layers.svg",
@@ -22,24 +22,12 @@ const systemMenu = [{
     icon: "images/bar-chart-2.svg",
     index: "gatewayStatus"
 }];
-const linkMenu = [{
-    name: "统一管理子系统",
-    href: "https://127.0.0.1:8088"
-}, {
-    name: "统一认证及审计子系统",
-    href: "https://127.0.0.1:8088"
-}, {
-    name: "蜂窝式数据仓库管理子系统",
-    href: "https://127.0.0.1:8088"
-}, {
-    name: "数据采集清洗引擎",
-    href: "https://127.0.0.1:8088"
-}];
+const linkMenu = [{name: "统一管理子系统", href: "https://127.0.0.1:8088"}, {name: "统一认证及审计子系统", href: "https://127.0.0.1:8088"}, {name: "蜂窝式数据仓库管理子系统", href: "https://127.0.0.1:8088"}, {name: "数据采集清洗引擎", href: "https://127.0.0.1:8088" }];
 
 class GateWay extends React.Component {
     constructor(props) {
         super(props);
-        const {menu} = props;
+        const {menu = []}= props;
         this.state = {menu};
         this.clickItem = this.clickItem.bind(this);
     }
@@ -49,22 +37,46 @@ class GateWay extends React.Component {
         if ("" === key) return;
         this.setState(prevState => {
             const {menu} = prevState;
-            return {ment: menu.map(it => {
-                it.isClick = key === it.index? true:false;
+            return {
+                active: key,
+                menu: menu.map(it => {
+                it.isClick = key === it.index;
                 return it;
             })}
         });
     }
 
+    switchPage() {
+        const {active = "main"} = this.state;
+        switch (active) {
+            case "main":
+                return <TotalMain />;
+            case "whiteManager":
+                return <WhiteManager />;
+            case "serviceRegistry":
+                return "serviceRegistry";
+            case "busyUsers":
+                return "busyUsers";
+            case "gatewayStatus":
+                return "gatewayStatus";
+        }
+    }
+
     render() {
+        const {menu} = this.state;
         return (
             <div class="row">
-                <NavLeft menu={this.state.menu} links={this.props.links} clickItem={this.clickItem}/>
-                <TotalMain />
+                <NavLeft menu={menu} links={this.props.links} clickItem={this.clickItem}/>
+                {this.switchPage()}
             </div>
         )
     }
 }
 
+GateWay.defaultProps = {
+    menu: [],
+    links: []
+};
+
 ReactDOM.render(<Header name="前置数据网关" version="v1.0.3"/>, document.getElementById("head"));
-ReactDOM.render(<GateWay menu={systemMenu} links={linkMenu}/>, document.getElementById("app"))
+ReactDOM.render(<GateWay menu={systemMenu} links={linkMenu}/>, document.getElementById("app"));
