@@ -19,13 +19,14 @@ svg.feather.feather-file { color: #999; }
 .modal-body .label {
     margin-bottom: 10px;
 }
-.modal-header { border: none; }
-.modal-footer { border: none; }
+.modal-header { border: none; padding-bottom: 0;}
+.modal-footer { border: none; padding: 2.5rem 1rem 0.5rem 1rem; }
 .modal-footer .btn { background-color: #ffffff; border-color: #dadce0; width: 20%;}
 .modal-footer .btn-secondary { color: #1a73e8; }
 .modal-footer .btn-primary:disabled { background-color: #f1f3f4; color: #80868b; }
 .modal-footer .btn-primary {background-color: #1a73e8; color: #ffffff;}
 .input-container .input {    
+    border-radius: 5px;
     background-color: #f1f3f4;
     border: none;
     box-sizing: border-box;
