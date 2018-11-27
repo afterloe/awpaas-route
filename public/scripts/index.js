@@ -8,7 +8,7 @@ const systemMenu = [{
 }, {
     name: "白名单管理",
     icon: "images/file.svg",
-    index: "whilteManager"
+    index: "whiteManager"
 }, {
     name: "服务注册列表",
     icon: "images/layers.svg",
@@ -36,11 +36,20 @@ const linkMenu = [{
     href: "https://127.0.0.1:8088"
 }];
 
+const requestTotal = [23, 233, 122, 309, 177, 133, 12];
+const cpuTotal = [3, 12, 20, 12, 45, 124, 18];
+const reqRank = [{name: "docker", url: "user/images/json", count: "50002", trend: "-"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "-"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "UP"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "DOWN"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "DOWN"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "-"}];
+
 class GateWay extends React.Component {
     constructor(props) {
         super(props);
-        const {menu} = props;
-        this.state = {menu};
+        const {menu = [], reqRank = [], reqTotal = [], cpuTotal = []}= props;
+        this.state = {menu, reqRank, reqTotal, cpuTotal};
         this.clickItem = this.clickItem.bind(this);
     }
 
@@ -49,22 +58,24 @@ class GateWay extends React.Component {
         if ("" === key) return;
         this.setState(prevState => {
             const {menu} = prevState;
-            return {ment: menu.map(it => {
-                it.isClick = key === it.index? true:false;
+            return {menu: menu.map(it => {
+                it.isClick = key === it.index? true: false;
                 return it;
             })}
         });
     }
 
     render() {
+        const {menu, reqRank, reqTotal, cpuTotal} = this.state;
         return (
             <div class="row">
-                <NavLeft menu={this.state.menu} links={this.props.links} clickItem={this.clickItem}/>
-                <TotalMain />
+                <NavLeft menu={menu} links={this.props.links} clickItem={this.clickItem}/>
+                <TotalMain rank={reqRank} reqTotal={reqTotal} cpuTotal={cpuTotal}/>
             </div>
         )
     }
 }
 
 ReactDOM.render(<Header name="前置数据网关" version="v1.0.3"/>, document.getElementById("head"));
-ReactDOM.render(<GateWay menu={systemMenu} links={linkMenu}/>, document.getElementById("app"))
+ReactDOM.render(<GateWay menu={systemMenu} links={linkMenu} reqRank={reqRank} reqTotal={requestTotal}
+                         cpuTotal={cpuTotal}/>, document.getElementById("app"));
