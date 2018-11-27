@@ -1,5 +1,5 @@
 .bg-dark { background-color: rgba(0, 92, 191, 1) !important }
-html { cursor: default; }
+body { font-family:"Microsoft YaHei",微软雅黑; cursor: default; background-color: #f8f9fa; color: #222222; }
 .nav-item embed { margin-right: 4px; color: #999; width: 16px; height: 16px; vertical-align: text-bottom; }
 svg.feather.feather-file { color: #999; }
 .nav-item:hover { background-color: #c3ccf1; border-radius:5px 5px;}
@@ -13,6 +13,6 @@ svg.feather.feather-file { color: #999; }
 .chartjs-render-monitor { display: block; width: 1053px; height: 444px; }
 
 /* 白名单 */
-.cont-btn { margin-left: 2px; }
+.cont-btn { margin-left: 10px; }
 .cont-btn:hover { cursor: pointer; color: #007bff }
 .cont-btn embed { margin-right: 4px; color: #999; width: 16px; height: 16px; vertical-align: text-bottom; }

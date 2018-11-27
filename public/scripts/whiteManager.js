@@ -45,8 +45,8 @@ class WhiteManager extends React.Component {
                 </div>
                 <div class="my-3 p-3 bg-white rounded shadow-sm">
                     <h6 class="border-bottom d-flex justify-content-between align-items-center">
-                        <span>列表</span>
-                        <small class="d-block text-right mt-3">
+                        <span class="d-block">列表</span>
+                        <small class="d-block text-right mt-3 mb-3">
                             <span class="cont-btn">
                                 <embed src="images/refresh-cw.svg" width="16" height="16" type="image/svg+xml"/>
                                 <span>同步</span>
