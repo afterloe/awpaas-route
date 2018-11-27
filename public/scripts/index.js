@@ -6,7 +6,7 @@ const systemMenu = [{
     isClick: true,
     index: "main"
 }, {
-    name: "白名单管理",
+    name: "网关白名单",
     icon: "images/file.svg",
     index: "whiteManager"
 }, {
@@ -28,7 +28,7 @@ class GateWay extends React.Component {
     constructor(props) {
         super(props);
         const {menu = []}= props;
-        this.state = {menu};
+        this.state = {menu, active: "whiteManager"};
         this.clickItem = this.clickItem.bind(this);
     }
 

@@ -1,5 +1,5 @@
 .bg-dark { background-color: rgba(0, 92, 191, 1) !important }
-
+body { font-family:"Microsoft YaHei",微软雅黑; cursor: default; background-color: #f8f9fa; color: #222222; }
 .nav-item embed { margin-right: 4px; color: #999; width: 16px; height: 16px; vertical-align: text-bottom; }
 svg.feather.feather-file { color: #999; }
 .nav-item:hover { background-color: #c3ccf1; border-radius:5px 5px;}
@@ -11,3 +11,35 @@ svg.feather.feather-file { color: #999; }
 .chartjs-size-monitor-shrink { position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1; }
 .chartjs-size-monitor-shrink div { position:absolute;width:200%;height:200%;left:0; top:0 }
 .chartjs-render-monitor { display: block; width: 1053px; height: 444px; }
+
+/* 白名单 */
+.cont-btn { margin-left: 10px; }
+.cont-btn:hover { cursor: pointer; color: #007bff }
+.cont-btn embed { margin-right: 4px; color: #999; width: 16px; height: 16px; vertical-align: text-bottom; }
+.modal-body .label {
+    margin-bottom: 10px;
+}
+.modal-header { border: none; padding-bottom: 0;}
+.modal-footer { border: none; padding: 2.5rem 1rem 0.5rem 1rem; }
+.modal-footer .btn { background-color: #ffffff; border-color: #dadce0; width: 20%;}
+.modal-footer .btn-secondary { color: #1a73e8; }
+.modal-footer .btn-primary:disabled { background-color: #f1f3f4; color: #80868b; }
+.modal-footer .btn-primary {background-color: #1a73e8; color: #ffffff;}
+.input-container .input {    
+    border-radius: 5px;
+    background-color: #f1f3f4;
+    border: none;
+    box-sizing: border-box;
+    color: var(--cr-input-color, var(--google-grey-900));
+    font-size: inherit;
+    line-height: inherit;
+    outline: none;
+    text-align: inherit;
+    text-overflow: ellipsis;
+    width: 100%;
+    border-bottom: 2px solid #1a73e8;
+    padding-bottom: var(--cr-input-padding-bottom, 6px);
+    padding-inline-end: var(--cr-input-padding-end, 8px);
+    padding-inline-start: var(--cr-input-padding-start, 8px);
+    padding-top: var(--cr-input-padding-top, 6px);
+}
