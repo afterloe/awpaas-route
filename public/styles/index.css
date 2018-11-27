@@ -1,5 +1,5 @@
 .bg-dark { background-color: rgba(0, 92, 191, 1) !important }
-
+html { cursor: default; }
 .nav-item embed { margin-right: 4px; color: #999; width: 16px; height: 16px; vertical-align: text-bottom; }
 svg.feather.feather-file { color: #999; }
 .nav-item:hover { background-color: #c3ccf1; border-radius:5px 5px;}
@@ -11,3 +11,8 @@ svg.feather.feather-file { color: #999; }
 .chartjs-size-monitor-shrink { position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1; }
 .chartjs-size-monitor-shrink div { position:absolute;width:200%;height:200%;left:0; top:0 }
 .chartjs-render-monitor { display: block; width: 1053px; height: 444px; }
+
+/* 白名单 */
+.cont-btn { margin-left: 2px; }
+.cont-btn:hover { cursor: pointer; color: #007bff }
+.cont-btn embed { margin-right: 4px; color: #999; width: 16px; height: 16px; vertical-align: text-bottom; }
