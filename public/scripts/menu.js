@@ -9,7 +9,7 @@ class NavLeft extends React.Component {
         const {menu = []} = this.props;
         return menu.map(it => (
             <li class="nav-item" onClick={this.props.clickItem} data-index={it.index}>
-                <a class={it.isClick? "nav-link active":"nav-link"} href="#">
+                <a class={it.isClick? "nav-link active":"nav-link"} href={"#" + it.index}>
                     <embed src={it.icon} width="16" height="16" type="image/svg+xml"/>
                     {it.name} {it.isClick? (<span class="sr-only">(current)</span>): ""}
                 </a>

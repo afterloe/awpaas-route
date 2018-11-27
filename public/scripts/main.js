@@ -1,19 +1,29 @@
 "use strict";
 
 const labels = ["周天", "周一", "周二", "周三", "周四", "周五", "周六"];
+const requestTotal = [23, 233, 122, 309, 177, 133, 12];
+const cpuTotal = [3, 12, 20, 12, 45, 124, 18];
+const reqRank = [{name: "docker", url: "user/images/json", count: "50002", trend: "-"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "-"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "UP"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "DOWN"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "DOWN"},
+    {name: "docker", url: "user/images/json", count: "50002", trend: "-"}];
 
 class TotalMain extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {}; // 初始化数据
     }
 
     componentDidMount() {
-        const {reqTotal = [], cpuTotal = []} = this.props; // 拉取数据
-        TotalMain.loadChart(reqTotal, cpuTotal) // 绘制流量报表
+        // 拉取数据
+        TotalMain.loadChart(requestTotal, cpuTotal); // 绘制流量报表
+        this.setState({rank: reqRank})
     }
 
     renderRequestRank() {
-        const {rank = []} = this.props;
+        const {rank = []} = this.state;
         return rank.map((it, i) => (
             <tr>
                 <td>{i}</td>

@@ -22,34 +22,13 @@ const systemMenu = [{
     icon: "images/bar-chart-2.svg",
     index: "gatewayStatus"
 }];
-const linkMenu = [{
-    name: "统一管理子系统",
-    href: "https://127.0.0.1:8088"
-}, {
-    name: "统一认证及审计子系统",
-    href: "https://127.0.0.1:8088"
-}, {
-    name: "蜂窝式数据仓库管理子系统",
-    href: "https://127.0.0.1:8088"
-}, {
-    name: "数据采集清洗引擎",
-    href: "https://127.0.0.1:8088"
-}];
-
-const requestTotal = [23, 233, 122, 309, 177, 133, 12];
-const cpuTotal = [3, 12, 20, 12, 45, 124, 18];
-const reqRank = [{name: "docker", url: "user/images/json", count: "50002", trend: "-"},
-    {name: "docker", url: "user/images/json", count: "50002", trend: "-"},
-    {name: "docker", url: "user/images/json", count: "50002", trend: "UP"},
-    {name: "docker", url: "user/images/json", count: "50002", trend: "DOWN"},
-    {name: "docker", url: "user/images/json", count: "50002", trend: "DOWN"},
-    {name: "docker", url: "user/images/json", count: "50002", trend: "-"}];
+const linkMenu = [{name: "统一管理子系统", href: "https://127.0.0.1:8088"}, {name: "统一认证及审计子系统", href: "https://127.0.0.1:8088"}, {name: "蜂窝式数据仓库管理子系统", href: "https://127.0.0.1:8088"}, {name: "数据采集清洗引擎", href: "https://127.0.0.1:8088" }];
 
 class GateWay extends React.Component {
     constructor(props) {
         super(props);
-        const {menu = [], reqRank = [], reqTotal = [], cpuTotal = []}= props;
-        this.state = {menu, reqRank, reqTotal, cpuTotal};
+        const {menu = []}= props;
+        this.state = {menu};
         this.clickItem = this.clickItem.bind(this);
     }
 
@@ -58,24 +37,46 @@ class GateWay extends React.Component {
         if ("" === key) return;
         this.setState(prevState => {
             const {menu} = prevState;
-            return {menu: menu.map(it => {
-                it.isClick = key === it.index? true: false;
+            return {
+                active: key,
+                menu: menu.map(it => {
+                it.isClick = key === it.index;
                 return it;
             })}
         });
     }
 
+    switchPage() {
+        const {active = "main"} = this.state;
+        switch (active) {
+            case "main":
+                return <TotalMain />;
+            case "whiteManager":
+                return <WhiteManager />;
+            case "serviceRegistry":
+                return "serviceRegistry";
+            case "busyUsers":
+                return "busyUsers";
+            case "gatewayStatus":
+                return "gatewayStatus";
+        }
+    }
+
     render() {
-        const {menu, reqRank, reqTotal, cpuTotal} = this.state;
+        const {menu} = this.state;
         return (
             <div class="row">
                 <NavLeft menu={menu} links={this.props.links} clickItem={this.clickItem}/>
-                <TotalMain rank={reqRank} reqTotal={reqTotal} cpuTotal={cpuTotal}/>
+                {this.switchPage()}
             </div>
         )
     }
 }
 
+GateWay.defaultProps = {
+    menu: [],
+    links: []
+};
+
 ReactDOM.render(<Header name="前置数据网关" version="v1.0.3"/>, document.getElementById("head"));
-ReactDOM.render(<GateWay menu={systemMenu} links={linkMenu} reqRank={reqRank} reqTotal={requestTotal}
-                         cpuTotal={cpuTotal}/>, document.getElementById("app"));
+ReactDOM.render(<GateWay menu={systemMenu} links={linkMenu}/>, document.getElementById("app"));
