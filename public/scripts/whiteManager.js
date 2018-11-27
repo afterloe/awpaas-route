@@ -1,9 +1,51 @@
 "use strict";
 
-class WhiteManager extends React.Component {
+class AppendItem extends React.Component {
     constructor(props) {
         super(props);
         this.state = {}; // 初始化数据
+    }
+
+    render() {
+        return (
+            <div class="modal fade show" tabindex="-1" aria-hidden="false" style={{display: "block", "padding-right": "17px"}}>
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h6 class="modal-title">添加记录</h6>
+                        <button type="button" class="close" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="label" aria-hidden="true">白名单</div>
+                        <div class="row-container">
+                            <div class="input-container">
+                                <input class="input" autofocus="" tabindex="0" aria-label="Search engine" />
+                                <div class="underline"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary">取消</button>
+                        <button type="button" class="btn btn-primary">保存</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+}
+
+class WhiteManager extends React.Component {
+    constructor(props) {
+        super(props);
+        this.appendItem = this.appendItem.bind(this);
+        this.state = {}; // 初始化数据
+    }
+
+    appendItem(event) {
+        ReactDOM.render(<AppendItem />, document.getElementById("modal"));
     }
 
     render() {
@@ -53,7 +95,7 @@ class WhiteManager extends React.Component {
                             </span>
                             <span class="cont-btn">
                                 <embed src="images/plus-circle.svg" width="16" height="16" type="image/svg+xml"/>
-                                <span>添加</span>
+                                <span onClick={this.appendItem}>添加</span>
                             </span>
                         </small>
                     </h6>
@@ -75,6 +117,7 @@ class WhiteManager extends React.Component {
                        </div>
                     </div>
                 </div>
+                <div id="modal"></div>
             </main>
         );
     }
