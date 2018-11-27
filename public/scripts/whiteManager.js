@@ -3,13 +3,21 @@
 class AppendItem extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {}; // 初始化数据
+        // this.state = {}; // 初始化数据
+        this.closeModal = this.closeModal.bind(this);
+    }
+
+    closeModal(event) {
+        const key = event.target.getAttribute("dataClose") || "";
+        if (-1 == key) {
+           ReactDOM.unmountComponentAtNode(document.getElementById("modal"))
+        }
     }
 
     render() {
         return (
-            <div class="modal fade show" tabindex="-1" aria-hidden="false" style={{display: "block", "padding-right": "17px", "background-color": "#00000059"}}>
-                <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal fade show" tabindex="-1" dataClose="-1" onClick={this.closeModal}>
+                <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                     <div class="modal-header">
                         <h6 class="modal-title">添加记录</h6>
@@ -24,7 +32,7 @@ class AppendItem extends React.Component {
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary">取消</button>
+                        <button type="button" dataClose="-1" class="btn btn-secondary">取消</button>
                         <button type="button" class="btn btn-primary" disabled>保存</button>
                     </div>
                     </div>

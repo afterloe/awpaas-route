@@ -1,4 +1,6 @@
 .bg-dark { background-color: rgba(0, 92, 191, 1) !important }
+.form-control-dark { background-color: #0062cc; }
+.form-control-dark::-webkit-input-placeholder { color: #ffffff; }
 body { font-family:"Microsoft YaHei",微软雅黑; cursor: default; background-color: #f8f9fa; color: #222222; }
 .nav-item embed { margin-right: 4px; color: #999; width: 16px; height: 16px; vertical-align: text-bottom; }
 svg.feather.feather-file { color: #999; }
@@ -19,6 +21,9 @@ svg.feather.feather-file { color: #999; }
 .modal-body .label {
     margin-bottom: 10px;
 }
+
+/* 模态窗 */
+.modal.fade.show { display: block; padding-right: 17px; background-color: #00000059 }
 .modal-header { border: none; padding-bottom: 0;}
 .modal-footer { border: none; padding: 2.5rem 1rem 0.5rem 1rem; }
 .modal-footer .btn { background-color: #ffffff; border-color: #dadce0; width: 20%;}
