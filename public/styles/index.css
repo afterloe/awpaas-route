@@ -48,3 +48,7 @@ svg.feather.feather-file { color: #999; }
     padding-inline-start: var(--cr-input-padding-start, 8px);
     padding-top: var(--cr-input-padding-top, 6px);
 }
+
+/* 服务注册列表 */
+.btn-outline-secondary.cont-btn:hover { background-color: #ffffff; }
+.rounded.m-cent { width: 60%; margin: 0 auto; }
