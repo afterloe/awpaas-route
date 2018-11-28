@@ -1,21 +1,35 @@
 "use strict";
 
-class AppendItem extends React.Component {
+class ModalWindow extends React.Component {
     constructor(props) {
         super(props);
-        // this.state = {}; // 初始化数据
+        const {title = "", itemName = "", value = ""} = this.props;
+        this.state = {title, itemName, value};  // 初始化数据
         this.closeModal = this.closeModal.bind(this);
+        this.inputChange = this.inputChange.bind(this);
+        this.saveInfo = this.saveInfo.bind(this);
+    }
+
+    inputChange(event) {
+        const v = event.currentTarget.value || "";
+        this.setState({value: v, flag: "" != v});
     }
 
     closeModal(event) {
         const key = event.target.getAttribute("dataClose") || "";
         if (-1 == key) {
-           ReactDOM.unmountComponentAtNode(document.getElementById("modal"))
+           ReactDOM.unmountComponentAtNode(document.getElementById("modal"));
         }
     }
 
+    saveInfo() {
+        const {value, flag} = this.state;
+        this.props.callback(value, flag);
+        ReactDOM.unmountComponentAtNode(document.getElementById("modal"));
+    }
+
     render() {
-        const {title = "", itemName = "", value = ""} = this.props;
+        const {title = "", itemName = "", value = "", flag} = this.state;
         return (
             <div class="modal fade show" tabindex="-1" dataClose="-1" onClick={this.closeModal}>
                 <div class="modal-dialog modal-dialog-centered">
@@ -27,14 +41,15 @@ class AppendItem extends React.Component {
                         <div class="label"><small>{itemName}</small></div>
                         <div class="row-container">
                             <div class="input-container">
-                                <input class="input" value={value} autofocus="" tabindex="0" aria-label={itemName} />
+                                <input onChange={this.inputChange} defaultValue={value} class="input" autofocus="" tabindex="0" aria-label={itemName} />
                                 <div class="underline"></div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" dataClose="-1" class="btn btn-secondary">取消</button>
-                        <button type="button" class="btn btn-primary" disabled>保存</button>
+                        {flag? <button type="button" className="btn btn-primary" onClick={this.saveInfo}>保存</button>:
+                            <button type="button" className="btn btn-primary" disabled>保存</button>}
                     </div>
                     </div>
                 </div>
@@ -82,16 +97,32 @@ class WhiteManager extends React.Component {
         this.syncToRemote = this.syncToRemote.bind(this);
         this.renderMsgAlert = this.renderMsgAlert.bind(this);
         this.closeMsgAlert = this.closeMsgAlert.bind(this);
-        this.state = {}; // 初始化数据
+        this.appendItemToRemote = this.appendItemToRemote.bind(this);
+        this.modifyToRemote = this.modifyToRemote.bind(this);
+        this.state = {list: ["/member/login", "/couchdb/info"]}; // 初始化数据
+    }
+
+    modifyToRemote(data, flag) {
+        console.log(data, flag);
+        this.setState({msg: {type: "success", context: "保存成功..."}})
+    }
+
+    appendItemToRemote(data, flag) {
+        if (flag) {
+            const {msg = {}, list} = this.state;
+            Object.assign(msg, {type: "success", context: "保存成功..."});
+            list.push(data);
+            this.setState({msg, list});
+        }
     }
 
     editItem(event) {
         const content = event.currentTarget.parentNode.previousSibling.textContent;
-        ReactDOM.render(<AppendItem title={"修改记录"} itemName={"白名单"} value={content}/>, document.getElementById("modal"));
+        ReactDOM.render(<ModalWindow title={"修改记录"} itemName={"白名单"} value={content} callback={this.modifyToRemote}/>, document.getElementById("modal"));
     }
 
     appendItem() {
-        ReactDOM.render(<AppendItem title={"添加记录"} itemName={"白名单"} />, document.getElementById("modal"));
+        ReactDOM.render(<ModalWindow title={"添加记录"} itemName={"白名单"} callback={this.appendItemToRemote} />, document.getElementById("modal"));
     }
 
     renderMsgAlert(msg) {
@@ -107,8 +138,30 @@ class WhiteManager extends React.Component {
         this.setState({msg: {type: "info", context: "同步中..."}})
     }
 
+    renderList(list = []) {
+        return list.map(it => (
+            <div className="media text-muted pt-3">
+                <div className="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                    <div className="d-flex justify-content-between align-items-center w-100">
+                        <strong className="text-gray-dark">{it}</strong>
+                        <span>
+                            <span className="cont-btn" onClick={this.editItem}>
+                                <embed src="images/edit.svg" width="16" height="16" type="image/svg+xml"/>
+                                <span>修改</span>
+                            </span>
+                            <span className="cont-btn">
+                                <embed src="images/trash.svg" width="16" height="16" type="image/svg+xml"/>
+                                <span>删除</span>
+                            </span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        ));
+    }
+
     render() {
-        const {msg = {}} = this.state;
+        const {msg = {}, list = []} = this.state;
         return (
             <main role="main" className="col-md-9 ml-sm-auto col-lg-10 px-4">
                 <div
@@ -150,7 +203,7 @@ class WhiteManager extends React.Component {
                     <h6 class="border-bottom d-flex justify-content-between align-items-center">
                         <span class="d-block">列表</span>
                         <small class="d-block text-right mt-3 mb-3">
-                            <span class="cont-btn">
+                            <span class="cont-btn" onClick={this.syncToRemote}>
                                 <embed src="images/refresh-cw.svg" width="16" height="16" type="image/svg+xml"/>
                                 <span>同步</span>
                             </span>
@@ -160,23 +213,7 @@ class WhiteManager extends React.Component {
                             </span>
                         </small>
                     </h6>
-                    <div class="media text-muted pt-3">
-                        <div class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-                            <div class="d-flex justify-content-between align-items-center w-100">
-                                <strong class="text-gray-dark">/member/login</strong>
-                                <span>
-                                    <span class="cont-btn" onClick={this.editItem}>
-                                        <embed src="images/edit.svg" width="16" height="16" type="image/svg+xml"/>
-                                        <span>修改</span>
-                                    </span>
-                                    <span class="cont-btn">
-                                        <embed src="images/trash.svg" width="16" height="16" type="image/svg+xml"/>
-                                        <span>删除</span>
-                                    </span>
-                                </span>
-                            </div>
-                       </div>
-                    </div>
+                    {this.renderList(list)}
                 </div>
                 <div id="modal"></div>
             </main>
