@@ -19,9 +19,8 @@ svg.feather.feather-file { color: #999; }
 .cont-btn:hover { cursor: pointer; color: #007bff }
 .cont-btn embed { margin-right: 4px; color: #999; width: 16px; height: 16px; vertical-align: text-bottom; }
 .cont-btn embed:hover {cursor: pointer; }
-.modal-body .label {
-    margin-bottom: 10px;
-}
+.modal-body .label { margin-bottom: 10px; }
+.alert { position: absolute; right: 20px; }
 
 /* 模态窗 */
 .modal.fade.show { display: block; padding-right: 17px; background-color: #00000059 }

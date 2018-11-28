@@ -65,7 +65,7 @@ class ModalWindow extends React.Component {
 
     saveInfo() {
         const {value, flag} = this.state;
-        this.props.callback(value, flag);
+        this.props.callback(value, flag, this.props.value);
         ReactDOM.unmountComponentAtNode(document.getElementById("modal"));
     }
 
@@ -146,14 +146,26 @@ class WhiteManager extends React.Component {
     }
 
     deleteToRemote(data) {
-        console.log(data);
-        this.setState({msg: {type: "error", context: "删除失败..."}})
+        const {msg = {}, list} = this.state;
+        Object.assign(msg, {type: "error", context: "删除失败..."});
+        const index = list.findIndex(it => data === it);
+        if (-1 !== index) {
+            list.splice(index, 1)
+        }
+        this.setState({msg, list});
     }
 
-    modifyToRemote(data, flag) {
-        // TODO
-        console.log(data, flag);
-        this.setState({msg: {type: "success", context: "保存成功..."}})
+    modifyToRemote(data, flag, oldData) {
+        console.log(data, flag, oldData);
+        const {msg = {}, list} = this.state;
+        const index = list.findIndex(it => oldData === it);
+        if (-1 === index) {
+            Object.assign(msg, {type: "error", context: "数据已被删除..."});
+            return;
+        }
+        list[index] = data;
+        Object.assign(msg, {type: "success", context: "保存成功..."});
+        this.setState({msg, list});
     }
 
     appendItemToRemote(data, flag) {
