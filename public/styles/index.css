@@ -31,6 +31,7 @@ svg.feather.feather-file { color: #999; }
 .modal-footer .btn-primary:disabled { background-color: #f1f3f4; color: #80868b; }
 .modal-footer .btn-primary {background-color: #1a73e8; color: #ffffff;}
 .modal-body .row-container { margin-bottom: 20px; }
+.input-container .input.isActive { border-bottom: 2px solid #1a73e8; }
 .input-container .input {    
     border-radius: 5px;
     background-color: #f1f3f4;
@@ -43,7 +44,6 @@ svg.feather.feather-file { color: #999; }
     text-align: inherit;
     text-overflow: ellipsis;
     width: 100%;
-    border-bottom: 2px solid #1a73e8;
     padding-bottom: var(--cr-input-padding-bottom, 6px);
     padding-inline-end: var(--cr-input-padding-end, 8px);
     padding-inline-start: var(--cr-input-padding-start, 8px);
