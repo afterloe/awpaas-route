@@ -3,11 +3,34 @@
 class ServiceRegistry extends React.Component {
     constructor(props) {
         super(props);
-        this.modifyMenu = this.modifyMenu.bind(this);
+        this.showMenu = this.showMenu.bind(this);
+        this.itemClick = this.itemClick.bind(this);
     }
 
-    modifyMenu(event) {
-        console.log(event.currentTarget)
+    static closeMenu(dom) {
+        const flag = dom.getAttribute("data-flag");
+        if ("f" === flag) {
+            dom.setAttribute("data-flag", "t");
+            dom.setAttribute("class", "dropdown-menu show")
+        } else {
+            dom.setAttribute("data-flag", "f");
+            dom.setAttribute("class", "dropdown-menu")
+        }
+    }
+
+    itemClick(event) {
+        const item = event.target;
+        const cmd = item.getAttribute("data-cmd") || "";
+        if ("" === cmd) {
+            ServiceRegistry.closeMenu(item)
+        }
+        console.log(cmd);
+        ServiceRegistry.closeMenu(item.parentNode);
+    }
+
+    showMenu(event) {
+        const menu = event.currentTarget.nextSibling;
+        ServiceRegistry.closeMenu(menu);
     }
 
     render() {
@@ -38,11 +61,8 @@ class ServiceRegistry extends React.Component {
                                     <strong className="text-gray-dark">
                                         <span className="badge badge-success">正常</span> couchdb
                                     </strong>
-                                    <span className="cont-btn">
-
-                                    </span>
                                     <div className="cont-btn btn-group show" role="group">
-                                        <svg onClick={this.modifyMenu} xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                        <svg onClick={this.showMenu} xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                              stroke-linecap="round" stroke-linejoin="round"
                                              className="feather feather-more-vertical">
@@ -50,15 +70,13 @@ class ServiceRegistry extends React.Component {
                                             <circle cx="12" cy="5" r="1"></circle>
                                             <circle cx="12" cy="19" r="1"></circle>
                                         </svg>
-                                        <div className="dropdown-menu show" aria-labelledby="btnGroupDrop1"
-                                             x-placement="bottom-start">
-                                            <span className="dropdown-item">删除</span>
-                                            <span className="dropdown-item">修改</span>
-                                            <span className="dropdown-item">详情</span>
-                                            <span className="dropdown-item">依赖关系</span>
+                                        <div className="dropdown-menu" data-flag="f" onClick={this.itemClick}>
+                                            <span className="dropdown-item" data-cmd="del">删除</span>
+                                            <span className="dropdown-item" data-cmd="modify">修改</span>
+                                            <span className="dropdown-item" data-cmd="detail">详情</span>
+                                            <span className="dropdown-item" data-cmd="rely">依赖关系</span>
                                         </div>
                                     </div>
-
                                 </div>
                                 <span className="d-block detail">
                                     <span>map to: 127.0.0.1:8088</span>

@@ -4,8 +4,8 @@
 body { font-family:"Microsoft YaHei",微软雅黑; cursor: default; background-color: #f8f9fa; color: #222222; }
 .nav-item embed { margin-right: 4px; color: #999; width: 16px; height: 16px; vertical-align: text-bottom; }
 svg.feather.feather-file { color: #999; }
-.nav-item:hover { background-color: #c3ccf1; border-radius:5px 5px;}
-.nav-item a:hover { color: #ffffff; }
+.nav-item:hover { background-color: #dee2e6; border-radius:5px 5px;}
+.nav-item a:hover { color: #007bff; }
 
 .chartjs-size-monitor { position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1; }
 .chartjs-size-monitor-expand { position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1; }
@@ -53,6 +53,6 @@ svg.feather.feather-file { color: #999; }
 .btn-outline-secondary.cont-btn:hover { background-color: #ffffff; }
 .rounded.m-cent { width: 60%; margin: 0 auto; }
 .detail span { margin-right: 10px; }
-.dropdown-menu.show { top: -23px; left: -148px; position: absolute; will-change: transform; transform: translate3d(0px, 38px, 0px); box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important;}
+.dropdown-menu.show { top: -18px; left: -148px; position: absolute; will-change: transform; transform: translate3d(0px, 38px, 0px); box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important;}
 .dropdown-menu.show span:hover { color: #007bff; }
 .dropdown-menu.show span:hover:active { color: #ffffff; }
