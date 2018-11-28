@@ -82,6 +82,10 @@ class ServiceRegistry extends React.Component {
         this.appendItemToRemote = this.appendItemToRemote.bind(this);
         this.renderServiceMap = this.renderServiceMap.bind(this);
         this.renderMsgAlert = this.renderMsgAlert.bind(this);
+        this.openDelWindow = this.openDelWindow.bind(this);
+        this.deleteToRemote = this.deleteToRemote.bind(this);
+        this.openModifyWindow = this.openModifyWindow.bind(this);
+        this.modifyItemToRemote = this.modifyItemToRemote.bind(this);
         this.state = {serviceList: [{serviceName: "couchdb", addr: "127.0.0.1:8088"}]};
     }
 
@@ -94,6 +98,30 @@ class ServiceRegistry extends React.Component {
             dom.setAttribute("data-flag", "f");
             dom.setAttribute("class", "dropdown-menu")
         }
+    }
+
+    modifyItemToRemote(data, flag) {
+        const [
+            {serviceList= [], msg= {}},
+            {serviceName}
+        ] = [
+            this.state,
+            data
+        ];
+        if (!flag) {
+            return ;
+        }
+        const index = serviceList.findIndex(item => {
+            return item.serviceName == serviceName;
+        });
+        if (-1 === index) {
+            Object.assign(msg, {type: "error", context: "服务映射不存在于注册中心..."});
+            this.setState({msg});
+            return 
+        }
+        serviceList[index] = data;
+        Object.assign(msg, {type: "success", context: "服务修改成功..."});
+        this.setState({serviceList, msg});
     }
 
     appendItemToRemote(data, flag) {
@@ -113,21 +141,57 @@ class ServiceRegistry extends React.Component {
             return 
         }
         serviceList.push({serviceName, addr});
+        Object.assign(msg, {type: "success", context: "服务注册成功..."});
         this.setState({serviceList, msg});
     }
 
     openModal() {
-        ReactDOM.render(<ModalWindow_editService title={"添加服务映射"} callback={this.appendItemToRemote} />, document.getElementById("modal"));
+        ReactDOM.render(<ModalWindow_editService title={"添加服务注册信息"} callback={this.appendItemToRemote} />, document.getElementById("modal"));
+    }
+
+    deleteToRemote(index) {
+        const {serviceList= [], msg= {}} = this.state;
+        const service = serviceList[index];
+        Object.assign(msg, {type: "success", context: "删除成功..."});
+        if (-1 !== index) {
+            serviceList.splice(index, 1)
+        }
+        this.setState({msg, serviceList});
+    }
+
+    openModifyWindow(index) {
+        const {serviceList = []} = this.state;
+        const service = serviceList[index];
+        ReactDOM.render(<ModalWindow_editService title={"修改服务注册信息"} serviceName={service.serviceName} addr={service.addr} callback={this.modifyItemToRemote} />, document.getElementById("modal"));
+    }
+
+    openDelWindow(index) {
+        const {serviceList = []} = this.state;
+        const service = serviceList[index];
+        const context = `确认删除 \t ${service.serviceName} \t ? \r\n 映射地址为 ${service.addr}`;
+        ReactDOM.render(<ModalWindow_alert title={"删除此项"} context={context} value={index} callback={this.deleteToRemote}/>, document.getElementById("modal"));
     }
 
     itemClick(event) {
         const item = event.target;
-        const cmd = item.getAttribute("data-cmd") || "";
+        const [
+            cmd,
+            index,
+        ]= [
+            item.getAttribute("data-cmd") || "", 
+            item.parentNode.getAttribute("data-index"),
+        ];
         if ("" === cmd) {
             ServiceRegistry.closeMenu(item)
         }
-        console.log(cmd);
         ServiceRegistry.closeMenu(item.parentNode);
+        switch (cmd) {
+            case "del": 
+                this.openDelWindow(index);
+            case "modify":
+                this.openModifyWindow(index);
+            default: return;
+        }
     }
 
     renderMsgAlert() {
@@ -143,34 +207,37 @@ class ServiceRegistry extends React.Component {
 
     renderServiceMap() {
         const {serviceList = []} = this.state;
-        return serviceList.map((item, index) => (
+        return 0 === serviceList.length? ( 
+        <div className="media text-muted pt-3">
+            暂无数据!
+        </div>): serviceList.map((item, index) => (
             <div className="media text-muted pt-3">
-            <div className="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-                <div className="d-flex justify-content-between align-items-center w-100">
-                    <strong className="text-gray-dark">
-                        <span className="badge badge-success">正常</span> {item.serviceName}
-                    </strong>
-                    <div className="cont-btn btn-group show" role="group">
-                        <svg onClick={this.showMenu} xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
-                             stroke-linecap="round" stroke-linejoin="round" className="feather feather-more-vertical">
-                            <circle cx="12" cy="12" r="1"></circle>
-                            <circle cx="12" cy="5" r="1"></circle>
-                            <circle cx="12" cy="19" r="1"></circle>
-                        </svg>
-                        <div className="dropdown-menu" data-index={index} data-flag="f" onClick={this.itemClick}>
-                            <span className="dropdown-item" data-cmd="del">删除</span>
-                            <span className="dropdown-item" data-cmd="modify">修改</span>
-                            <span className="dropdown-item" data-cmd="detail">详情</span>
-                            <span className="dropdown-item" data-cmd="rely">依赖关系</span>
+                <div className="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                    <div className="d-flex justify-content-between align-items-center w-100">
+                        <strong className="text-gray-dark">
+                            <span className="badge badge-success">正常</span> {item.serviceName}
+                        </strong>
+                        <div className="cont-btn btn-group show" role="group">
+                            <svg onClick={this.showMenu} xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
+                                stroke-linecap="round" stroke-linejoin="round" className="feather feather-more-vertical">
+                                <circle cx="12" cy="12" r="1"></circle>
+                                <circle cx="12" cy="5" r="1"></circle>
+                                <circle cx="12" cy="19" r="1"></circle>
+                            </svg>
+                            <div className="dropdown-menu" data-index={index} data-flag="f" onClick={this.itemClick}>
+                                <span className="dropdown-item" data-cmd="del">删除</span>
+                                <span className="dropdown-item" data-cmd="modify">修改</span>
+                                <span className="dropdown-item" data-cmd="detail">详情</span>
+                                <span className="dropdown-item" data-cmd="rely">依赖关系</span>
+                            </div>
                         </div>
                     </div>
+                    <span className="d-block detail">
+                        <span>map to: <strong>{item.addr}</strong></span>
+                        <span>register time: <strong>{item.registryTime || new Date().toLocaleString()}</strong></span>
+                    </span>
                 </div>
-                <span className="d-block detail">
-                    <span>map to: <strong>{item.addr}</strong></span>
-                    <span>register time: <strong>{item.registryTime || new Date().toLocaleString()}</strong></span>
-                </span>
-            </div>
             </div>
         ));
     }
