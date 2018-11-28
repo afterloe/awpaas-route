@@ -35,8 +35,13 @@ class ServiceRegistry extends React.Component {
                     <div className="media text-muted pt-3">
                             <div className="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
                                 <div className="d-flex justify-content-between align-items-center w-100">
-                                    <strong className="text-gray-dark">couchdb</strong>
+                                    <strong className="text-gray-dark">
+                                        <span className="badge badge-success">正常</span> couchdb
+                                    </strong>
                                     <span className="cont-btn">
+
+                                    </span>
+                                    <div className="cont-btn btn-group show" role="group">
                                         <svg onClick={this.modifyMenu} xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                              stroke-linecap="round" stroke-linejoin="round"
@@ -45,9 +50,17 @@ class ServiceRegistry extends React.Component {
                                             <circle cx="12" cy="5" r="1"></circle>
                                             <circle cx="12" cy="19" r="1"></circle>
                                         </svg>
-                                    </span>
+                                        <div className="dropdown-menu show" aria-labelledby="btnGroupDrop1"
+                                             x-placement="bottom-start">
+                                            <span className="dropdown-item">删除</span>
+                                            <span className="dropdown-item">修改</span>
+                                            <span className="dropdown-item">详情</span>
+                                            <span className="dropdown-item">依赖关系</span>
+                                        </div>
+                                    </div>
+
                                 </div>
-                                <span className="d-block">
+                                <span className="d-block detail">
                                     <span>map to: 127.0.0.1:8088</span>
                                     <span>register time: 2018-11-28 14:24:33</span>
                                 </span>

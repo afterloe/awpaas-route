@@ -52,3 +52,7 @@ svg.feather.feather-file { color: #999; }
 /* 服务注册列表 */
 .btn-outline-secondary.cont-btn:hover { background-color: #ffffff; }
 .rounded.m-cent { width: 60%; margin: 0 auto; }
+.detail span { margin-right: 10px; }
+.dropdown-menu.show { top: -23px; left: -148px; position: absolute; will-change: transform; transform: translate3d(0px, 38px, 0px); box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important;}
+.dropdown-menu.show span:hover { color: #007bff; }
+.dropdown-menu.show span:hover:active { color: #ffffff; }
