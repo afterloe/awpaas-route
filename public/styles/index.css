@@ -18,6 +18,7 @@ svg.feather.feather-file { color: #999; }
 .cont-btn { margin-left: 10px; }
 .cont-btn:hover { cursor: pointer; color: #007bff }
 .cont-btn embed { margin-right: 4px; color: #999; width: 16px; height: 16px; vertical-align: text-bottom; }
+.cont-btn embed:hover {cursor: pointer; }
 .modal-body .label {
     margin-bottom: 10px;
 }
