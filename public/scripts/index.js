@@ -16,7 +16,7 @@ const systemMenu = [{
 }, {
     name: "活跃用户",
     icon: "images/users.svg",
-    index: "busyUsers"
+    index: "activeUsers"
 }, {
     name: "网关状态",
     icon: "images/bar-chart-2.svg",
@@ -29,7 +29,7 @@ class GateWay extends React.Component {
         super(props);
         const {menu = []}= props;
         // TODO
-        this.state = {menu, active: "serviceRegistry"};
+        this.state = {menu, active: "activeUsers"};
         this.clickItem = this.clickItem.bind(this);
     }
 
@@ -56,8 +56,8 @@ class GateWay extends React.Component {
                 return <WhiteManager />;
             case "serviceRegistry":
                 return <ServiceRegistry />;
-            case "busyUsers":
-                return "busyUsers";
+            case "activeUsers":
+                return <ActiveUsers />;
             case "gatewayStatus":
                 return "gatewayStatus";
         }

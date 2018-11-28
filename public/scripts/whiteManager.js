@@ -49,6 +49,8 @@ class ModalWindow extends React.Component {
         this.closeModal = this.closeModal.bind(this);
         this.inputChange = this.inputChange.bind(this);
         this.saveInfo = this.saveInfo.bind(this);
+        this.blurActive = this.blurActive.bind(this);
+        this.getFocus = this.getFocus.bind(this);
     }
 
     inputChange(event) {
@@ -69,6 +71,16 @@ class ModalWindow extends React.Component {
         ReactDOM.unmountComponentAtNode(document.getElementById("modal"));
     }
 
+    blurActive(event) {
+        const dom = event.currentTarget;
+        dom.setAttribute("class", "input")
+    }
+
+    getFocus(event) {
+        const dom = event.currentTarget;
+        dom.setAttribute("class", "input isActive")
+    }
+
     render() {
         const {title = "", itemName = "", value = "", flag} = this.state;
         return (
@@ -82,8 +94,8 @@ class ModalWindow extends React.Component {
                         <div class="label"><small>{itemName}</small></div>
                         <div class="row-container">
                             <div class="input-container">
-                                <input onChange={this.inputChange} defaultValue={value} class="input" autofocus="" tabindex="0" aria-label={itemName} />
-                                <div class="underline"></div>
+                                <input onChange={this.inputChange} onFocus={this.getFocus} onBlur={this.blurActive} defaultValue={value} class="input"
+                                autofocus="" tabindex="0" aria-label={itemName} />
                             </div>
                         </div>
                     </div>

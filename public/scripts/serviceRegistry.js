@@ -8,6 +8,8 @@ class ModalWindow_editService extends React.Component {
         this.closeModal = this.closeModal.bind(this);
         this.inputChange = this.inputChange.bind(this);
         this.saveInfo = this.saveInfo.bind(this);
+        this.blurActive = this.blurActive.bind(this);
+        this.getFocus = this.getFocus.bind(this);
     }
 
     inputChange(event) {
@@ -30,6 +32,16 @@ class ModalWindow_editService extends React.Component {
         ReactDOM.unmountComponentAtNode(document.getElementById("modal"));
     }
 
+    blurActive(event) {
+        const dom = event.currentTarget;
+        dom.setAttribute("class", "input")
+    }
+
+    getFocus(event) {
+        const dom = event.currentTarget;
+        dom.setAttribute("class", "input isActive")
+    }
+
     render() {
         const {title = "", serviceName = "", addr = "", flag} = this.state;
         return (
@@ -45,9 +57,8 @@ class ModalWindow_editService extends React.Component {
                             </div>
                             <div class="row-container">
                                 <div class="input-container">
-                                    <input onChange={this.inputChange} defaultValue={serviceName} class="input"
+                                    <input onChange={this.inputChange} onFocus={this.getFocus} onBlur={this.blurActive} defaultValue={serviceName} class="input"
                                            data-id="serviceName" autofocus="" tabindex="0" aria-label={serviceName} />
-                                    <div class="underline"></div>
                                 </div>
                             </div>
                             <div className="label">
@@ -55,9 +66,8 @@ class ModalWindow_editService extends React.Component {
                             </div>
                             <div className="row-container">
                                 <div className="input-container">
-                                    <input onChange={this.inputChange} defaultValue={addr} className="input"
+                                    <input onChange={this.inputChange} onFocus={this.getFocus} onBlur={this.blurActive} defaultValue={addr} className="input"
                                            data-id="addr" autoFocus="" tabIndex="0" aria-label={addr}/>
-                                    <div className="underline"></div>
                                 </div>
                             </div>
                         </div>
