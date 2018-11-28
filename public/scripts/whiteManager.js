@@ -1,5 +1,46 @@
 "use strict";
 
+
+class ModalWindow_alert extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
+    closeModal(event) {
+        const key = event.target.getAttribute("dataClose") || "";
+        if (-1 == key) {
+            ReactDOM.unmountComponentAtNode(document.getElementById("modal"));
+        }
+    }
+
+    render() {
+        const {title = "确认删除？", context = "111111"} = this.props;
+        return (
+            <div className="modal fade bd-example-modal-sm show" tabIndex="-1" dataClose="-1" onClick={this.closeModal}>
+                <div className="modal-dialog modal-dialog-centered bd-example-modal-sm">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h6 className="modal-title">{title}</h6>
+                        </div>
+                        <div className="modal-body">
+                            <div className="row-container">
+                                {context}
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" dataClose="-1" className="btn btn-secondary">取消</button>
+                            <button type="button" className="btn btn-primary" onClick={() => {
+                                this.props.callback(this.props.value);
+                                ReactDOM.unmountComponentAtNode(document.getElementById("modal"));
+                            }}>确认</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+}
+
 class ModalWindow extends React.Component {
     constructor(props) {
         super(props);
@@ -99,21 +140,34 @@ class WhiteManager extends React.Component {
         this.closeMsgAlert = this.closeMsgAlert.bind(this);
         this.appendItemToRemote = this.appendItemToRemote.bind(this);
         this.modifyToRemote = this.modifyToRemote.bind(this);
+        this.deleteItem = this.deleteItem.bind(this);
+        this.deleteToRemote = this.deleteToRemote.bind(this);
         this.state = {list: ["/member/login", "/couchdb/info"]}; // 初始化数据
     }
 
+    deleteToRemote(data) {
+        console.log(data);
+        this.setState({msg: {type: "error", context: "删除失败..."}})
+    }
+
     modifyToRemote(data, flag) {
+        // TODO
         console.log(data, flag);
         this.setState({msg: {type: "success", context: "保存成功..."}})
     }
 
     appendItemToRemote(data, flag) {
-        if (flag) {
-            const {msg = {}, list} = this.state;
-            Object.assign(msg, {type: "success", context: "保存成功..."});
-            list.push(data);
-            this.setState({msg, list});
-        }
+        if (!flag) return ;
+        const {msg = {}, list} = this.state;
+        Object.assign(msg, {type: "success", context: "保存成功..."});
+        list.push(data);
+        this.setState({msg, list});
+    }
+
+    deleteItem(event) {
+        const content = event.currentTarget.parentNode.previousSibling.textContent;
+        const context = `确认删除 \t ${content} \t ?`;
+        ReactDOM.render(<ModalWindow_alert title={"删除此项"} context={context} value={content} callback={this.deleteToRemote}/>, document.getElementById("modal"));
     }
 
     editItem(event) {
@@ -149,7 +203,7 @@ class WhiteManager extends React.Component {
                                 <embed src="images/edit.svg" width="16" height="16" type="image/svg+xml"/>
                                 <span>修改</span>
                             </span>
-                            <span className="cont-btn">
+                            <span className="cont-btn" onClick={this.deleteItem}>
                                 <embed src="images/trash.svg" width="16" height="16" type="image/svg+xml"/>
                                 <span>删除</span>
                             </span>
