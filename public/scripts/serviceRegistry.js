@@ -80,6 +80,9 @@ class ServiceRegistry extends React.Component {
         this.itemClick = this.itemClick.bind(this);
         this.openModal = this.openModal.bind(this);
         this.appendItemToRemote = this.appendItemToRemote.bind(this);
+        this.renderServiceMap = this.renderServiceMap.bind(this);
+        this.renderMsgAlert = this.renderMsgAlert.bind(this);
+        this.state = {serviceList: [{serviceName: "couchdb", addr: "127.0.0.1:8088"}]};
     }
 
     static closeMenu(dom) {
@@ -94,7 +97,23 @@ class ServiceRegistry extends React.Component {
     }
 
     appendItemToRemote(data, flag) {
-        console.log(data, flag)
+        const [
+            {serviceList= [], msg= {}},
+            {serviceName, addr}
+        ] = [
+            this.state,
+            data
+        ];
+        const index = serviceList.findIndex(item => {
+            return item.serviceName == serviceName;
+        });
+        if (-1 !== index) {
+            Object.assign(msg, {type: "error", context: "服务已存在..."});
+            this.setState({msg});
+            return 
+        }
+        serviceList.push({serviceName, addr});
+        this.setState({serviceList, msg});
     }
 
     openModal() {
@@ -111,9 +130,49 @@ class ServiceRegistry extends React.Component {
         ServiceRegistry.closeMenu(item.parentNode);
     }
 
+    renderMsgAlert() {
+        const {msg = {}} = this.state;
+        const {type, context = ""} = msg;
+        return "" === context? "": <MsgAlert type= {type} msg= {context} closeAlert= {()=>this.setState({msg: {}})}/>
+    }
+
     showMenu(event) {
         const menu = event.currentTarget.nextSibling;
         ServiceRegistry.closeMenu(menu);
+    }
+
+    renderServiceMap() {
+        const {serviceList = []} = this.state;
+        return serviceList.map((item, index) => (
+            <div className="media text-muted pt-3">
+            <div className="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                <div className="d-flex justify-content-between align-items-center w-100">
+                    <strong className="text-gray-dark">
+                        <span className="badge badge-success">正常</span> {item.serviceName}
+                    </strong>
+                    <div className="cont-btn btn-group show" role="group">
+                        <svg onClick={this.showMenu} xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
+                             stroke-linecap="round" stroke-linejoin="round" className="feather feather-more-vertical">
+                            <circle cx="12" cy="12" r="1"></circle>
+                            <circle cx="12" cy="5" r="1"></circle>
+                            <circle cx="12" cy="19" r="1"></circle>
+                        </svg>
+                        <div className="dropdown-menu" data-index={index} data-flag="f" onClick={this.itemClick}>
+                            <span className="dropdown-item" data-cmd="del">删除</span>
+                            <span className="dropdown-item" data-cmd="modify">修改</span>
+                            <span className="dropdown-item" data-cmd="detail">详情</span>
+                            <span className="dropdown-item" data-cmd="rely">依赖关系</span>
+                        </div>
+                    </div>
+                </div>
+                <span className="d-block detail">
+                    <span>map to: <strong>{item.addr}</strong></span>
+                    <span>register time: <strong>{item.registryTime || new Date().toLocaleString()}</strong></span>
+                </span>
+            </div>
+            </div>
+        ));
     }
 
     render() {
@@ -138,35 +197,8 @@ class ServiceRegistry extends React.Component {
                 <div className="my-3 p-3 bg-white rounded shadow-sm m-cent">
                     <h6 className="border-bottom d-flex justify-content-between align-items-center">
                     </h6>
-                    <div className="media text-muted pt-3">
-                            <div className="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-                                <div className="d-flex justify-content-between align-items-center w-100">
-                                    <strong className="text-gray-dark">
-                                        <span className="badge badge-success">正常</span> couchdb
-                                    </strong>
-                                    <div className="cont-btn btn-group show" role="group">
-                                        <svg onClick={this.showMenu} xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                             stroke-linecap="round" stroke-linejoin="round"
-                                             className="feather feather-more-vertical">
-                                            <circle cx="12" cy="12" r="1"></circle>
-                                            <circle cx="12" cy="5" r="1"></circle>
-                                            <circle cx="12" cy="19" r="1"></circle>
-                                        </svg>
-                                        <div className="dropdown-menu" data-flag="f" onClick={this.itemClick}>
-                                            <span className="dropdown-item" data-cmd="del">删除</span>
-                                            <span className="dropdown-item" data-cmd="modify">修改</span>
-                                            <span className="dropdown-item" data-cmd="detail">详情</span>
-                                            <span className="dropdown-item" data-cmd="rely">依赖关系</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <span className="d-block detail">
-                                    <span>map to: 127.0.0.1:8088</span>
-                                    <span>register time: 2018-11-28 14:24:33</span>
-                                </span>
-                            </div>
-                    </div>
+                        {this.renderMsgAlert()}
+                        {this.renderServiceMap()}
                     <div id="modal"></div>
                 </div>
             </main>
