@@ -4,8 +4,8 @@
 body { font-family:"Microsoft YaHei",微软雅黑; cursor: default; background-color: #f8f9fa; color: #222222; }
 .nav-item embed { margin-right: 4px; color: #999; width: 16px; height: 16px; vertical-align: text-bottom; }
 svg.feather.feather-file { color: #999; }
-.nav-item:hover { background-color: #c3ccf1; border-radius:5px 5px;}
-.nav-item a:hover { color: #ffffff; }
+.nav-item:hover { background-color: #dee2e6; border-radius:5px 5px;}
+.nav-item a:hover { color: #007bff; }
 
 .chartjs-size-monitor { position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px; overflow: hidden; pointer-events: none; visibility: hidden; z-index: -1; }
 .chartjs-size-monitor-expand { position:absolute;left:0;top:0;right:0;bottom:0;overflow:hidden;pointer-events:none;visibility:hidden;z-index:-1; }
@@ -18,18 +18,19 @@ svg.feather.feather-file { color: #999; }
 .cont-btn { margin-left: 10px; }
 .cont-btn:hover { cursor: pointer; color: #007bff }
 .cont-btn embed { margin-right: 4px; color: #999; width: 16px; height: 16px; vertical-align: text-bottom; }
-.modal-body .label {
-    margin-bottom: 10px;
-}
+.cont-btn embed:hover {cursor: pointer; }
+.modal-body .label { margin-bottom: 10px; }
+.alert { position: absolute; right: 20px; }
 
 /* 模态窗 */
 .modal.fade.show { display: block; padding-right: 17px; background-color: #00000059 }
 .modal-header { border: none; padding-bottom: 0;}
-.modal-footer { border: none; padding: 2.5rem 1rem 0.5rem 1rem; }
+.modal-footer { border: none; padding: 0.5rem 1rem 0.5rem 1rem; }
 .modal-footer .btn { background-color: #ffffff; border-color: #dadce0; width: 20%;}
 .modal-footer .btn-secondary { color: #1a73e8; }
 .modal-footer .btn-primary:disabled { background-color: #f1f3f4; color: #80868b; }
 .modal-footer .btn-primary {background-color: #1a73e8; color: #ffffff;}
+.modal-body .row-container { margin-bottom: 20px; }
 .input-container .input {    
     border-radius: 5px;
     background-color: #f1f3f4;
@@ -48,3 +49,11 @@ svg.feather.feather-file { color: #999; }
     padding-inline-start: var(--cr-input-padding-start, 8px);
     padding-top: var(--cr-input-padding-top, 6px);
 }
+
+/* 服务注册列表 */
+.btn-outline-secondary.cont-btn:hover { background-color: #ffffff; }
+.rounded.m-cent { width: 60%; margin: 0 auto; }
+.detail span { margin-right: 10px; }
+.dropdown-menu.show { top: -18px; left: -148px; position: absolute; will-change: transform; transform: translate3d(0px, 38px, 0px); box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important;}
+.dropdown-menu.show span:hover { color: #007bff; }
+.dropdown-menu.show span:hover:active { color: #ffffff; }

@@ -28,7 +28,8 @@ class GateWay extends React.Component {
     constructor(props) {
         super(props);
         const {menu = []}= props;
-        this.state = {menu, active: "whiteManager"};
+        // TODO
+        this.state = {menu, active: "serviceRegistry"};
         this.clickItem = this.clickItem.bind(this);
     }
 
@@ -54,7 +55,7 @@ class GateWay extends React.Component {
             case "whiteManager":
                 return <WhiteManager />;
             case "serviceRegistry":
-                return "serviceRegistry";
+                return <ServiceRegistry />;
             case "busyUsers":
                 return "busyUsers";
             case "gatewayStatus":
