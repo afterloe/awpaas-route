@@ -198,9 +198,12 @@ class ServiceRegistry extends React.Component {
         switch (cmd) {
             case "del": 
                 this.openDelWindow(index);
+                return;
             case "modify":
                 this.openModifyWindow(index);
-            default: return;
+                return;
+            default:
+                return;
         }
     }
 
