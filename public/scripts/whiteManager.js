@@ -1,6 +1,5 @@
 "use strict";
 
-
 class ModalWindow_alert extends React.Component {
     constructor(props) {
         super(props);
@@ -142,6 +141,66 @@ class MsgAlert extends React.Component {
     }
 }
 
+const jsonToQueryStr = data => {
+    const item = [];
+    Object.keys(data).map(key => item.push(`${key}=${encodeURIComponent(data[key])}`));
+    return item.join("&");
+};
+
+const appendToRemote = (data, path) => new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.timeout = 15 * 1000;
+    xhr.ontimeout = () => reject(new Error('time is up!'));
+    xhr.open("PUT", path);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.setRequestHeader("cache-control", "no-cache");
+    xhr.send(jsonToQueryStr(data));
+    xhr.onreadystatechange = () => {
+        if (4 === xhr.readyState) {
+            const result = JSON.parse(xhr.responseText);
+            if (200 === xhr.status) {
+                if (200 !== result.code) reject(result.msg);
+                resolve(result.data);
+            } else reject(result.msg);
+        }
+    };
+});
+
+const deleteFromRemote = (data, path) => new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.timeout = 15 * 1000;
+    xhr.ontimeout = () => reject(new Error('time is up!'));
+    xhr.open("DELETE", path+"?"+jsonToQueryStr(data));
+    xhr.setRequestHeader("cache-control", "no-cache");
+    xhr.send();
+    xhr.onreadystatechange = () => {
+        if (4 === xhr.readyState) {
+            const result = JSON.parse(xhr.responseText);
+            if (200 === xhr.status) {
+                if (200 !== result.code) reject(result.msg);
+                resolve(result.data);
+            } else reject(result.msg);
+        }
+    };
+});
+
+const getListFromRemote = path => new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.timeout = 15 * 1000;
+    xhr.ontimeout = () => reject(new Error('time is up!'));
+    xhr.open("get", path);
+    xhr.send();
+    xhr.onreadystatechange = () => {
+        if (4 === xhr.readyState) {
+            const result = JSON.parse(xhr.responseText);
+            if (200 === xhr.status) {
+                if (200 !== result.code) reject(result.msg);
+                resolve(result.data);
+            } else reject(result.msg);
+        }
+    };
+});
+
 class WhiteManager extends React.Component {
     constructor(props) {
         super(props);
@@ -154,38 +213,83 @@ class WhiteManager extends React.Component {
         this.modifyToRemote = this.modifyToRemote.bind(this);
         this.deleteItem = this.deleteItem.bind(this);
         this.deleteToRemote = this.deleteToRemote.bind(this);
-        this.state = {list: ["/member/login", "/couchdb/info"]}; // 初始化数据
+        this.state = {};
+    }
+
+    componentDidMount() {
+        const that = this;
+        getListFromRemote("manager/v1/whiteList").then(data => {
+            that.setState({list: data}); // 初始化数据
+        }).catch(error => {
+            that.setState({list: [], msg: {type: "error", context: error}});
+        });
     }
 
     deleteToRemote(data) {
-        const {msg = {}, list} = this.state;
-        Object.assign(msg, {type: "error", context: "删除失败..."});
+        const that = this;
+        const {msg = {}, list} = that.state;
         const index = list.findIndex(it => data === it);
         if (-1 !== index) {
-            list.splice(index, 1)
+            deleteFromRemote({item: data}, "manager/v1/whiteList").then(() => {
+                list.splice(index, 1);
+                Object.assign(msg, {type: "success", context: "删除成功..."});
+                that.setState({msg, list});
+            }).catch(error => {
+                Object.assign(msg, {type: "error", context: error});
+                that.setState({msg});
+            });
+        } else {
+            Object.assign(msg, {type: "error", context: "删除失败..."});
+            that.setState({msg});
         }
-        this.setState({msg, list});
+
     }
 
     modifyToRemote(data, flag, oldData) {
-        console.log(data, flag, oldData);
-        const {msg = {}, list} = this.state;
+        if (!flag) return;
+        const that = this;
+        const {msg = {}, list} = that.state;
+        if (data === oldData) {
+            Object.assign(msg, {type: "error", context: "未被修改..."});
+            that.setState({msg});
+            return;
+        }
         const index = list.findIndex(it => oldData === it);
         if (-1 === index) {
             Object.assign(msg, {type: "error", context: "数据已被删除..."});
+            that.setState({msg});
             return;
         }
-        list[index] = data;
-        Object.assign(msg, {type: "success", context: "保存成功..."});
-        this.setState({msg, list});
+        Promise.all([deleteFromRemote({item: oldData}, "manager/v1/whiteList")
+            , appendToRemote({item: data}, "manager/v1/whiteList")]).then(() => {
+            list[index] = data;
+            Object.assign(msg, {type: "success", context: "修改成功..."});
+            that.setState({msg, list});
+        }).catch(error => {
+            Object.assign(msg, {type: "error", context: error});
+            that.setState({msg});
+        });
     }
 
     appendItemToRemote(data, flag) {
         if (!flag) return ;
-        const {msg = {}, list} = this.state;
-        Object.assign(msg, {type: "success", context: "保存成功..."});
-        list.push(data);
-        this.setState({msg, list});
+        const that = this;
+        const {msg = {}, list} = that.state;
+        const index = list.findIndex(it => data === it);
+        if (-1 === index) {
+            appendToRemote({item: data}, "manager/v1/whiteList").then(() => {
+                list.push(data);
+                Object.assign(msg, {type: "success", context: "保存成功..."});
+                that.setState({msg, list});
+            }).catch(error => {
+                Object.assign(msg, {type: "error", context: error});
+                this.setState({msg});
+            });
+        } else {
+            Object.assign(msg, {type: "error", context: "失败：元素已存在..."});
+            this.setState({msg});
+        }
+
     }
 
     deleteItem(event) {
@@ -213,7 +317,13 @@ class WhiteManager extends React.Component {
     }
 
     syncToRemote() {
-        this.setState({msg: {type: "info", context: "同步中..."}})
+        const that = this;
+        that.setState({msg: {type: "info", context: "同步中..."}});
+        getListFromRemote("manager/v1/whiteList").then(data => {
+            that.setState({list: data}); // 初始化数据
+        }).catch(error => {
+            that.setState({list: [], msg: {type: "error", context: error}});
+        });
     }
 
     renderList(list = []) {
