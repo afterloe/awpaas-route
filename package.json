@@ -15,7 +15,7 @@
   },
   "server": {
     "gateway": {
-      "addr": "127.0.0.1",
+      "addr": "0.0.0.0",
       "port": "8080",
       "multiCore": {
         "enable": true,
@@ -23,11 +23,11 @@
       }
     },
     "daemon": {
-      "addr": "127.0.0.1",
+      "addr": "0.0.0.0",
       "port": "8081"
     },
     "cache": {
-      "addr": "127.0.0.1",
+      "addr": "192.168.3.21",
       "port": "6379",
       "channel": ["serviceDiscovery", "whiteListChange"],
       "uname": "ascs",
