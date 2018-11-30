@@ -29,7 +29,7 @@ class GateWay extends React.Component {
         super(props);
         const {menu = []}= props;
         // TODO
-        this.state = {menu, active: "activeUsers"};
+        this.state = {menu, active: "main"};
         this.clickItem = this.clickItem.bind(this);
     }
 
