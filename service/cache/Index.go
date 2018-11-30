@@ -16,17 +16,22 @@ var (
 	defAddr string
 	whiteListKey string
 	addrMapKey string
+	redisAddr string
 )
 
 func init() {
 	whiteListCache = make([]string, 0)
 	addressMap = make(map[string]string)
 	gateway := config.GetByTarget(config.Get("server"), "gateway")
+	cache := config.GetByTarget(config.Get("server"), "cache")
 	defAddr = fmt.Sprintf("%s:%s",
 		config.GetByTarget(gateway, "addr"),
 		config.GetByTarget(gateway, "port"))
 	whiteListKey = "whiteList"
 	addrMapKey = "serviceAddrMap"
+	redisAddr = fmt.Sprintf("%s:%s",
+		config.GetByTarget(cache, "addr"),
+		config.GetByTarget(cache, "port"))
 }
 
 func LoadCache(list []interface{}) {
@@ -130,7 +135,8 @@ func SendWhiteListToRemote(key string) {
 }
 
 func toRemote(action string, key ...interface{}) (interface{}, error) {
-	conn, err := redis.Dial("tcp", "127.0.0.1:6379")
+	conn, err := redis.DialTimeout("tcp", redisAddr, 3000, 3000, 3000)
+	// conn, err := redis.Dial("tcp", redisAddr)
 	if nil != err {
 		logger.Error("can't connect redis service")
 		return nil, err

@@ -191,6 +191,7 @@ func query_authInfo(info *authentication.ReqInfo) error {
 func forward(req *authentication.ReqInfo, addr string, content []string, client net.Conn) {
 	remote, err := net.Dial("tcp", addr)
 	if nil != err {
+		fmt.Println(err)
 		callDaemon(502, "service%20inaccessibility", client)
 		return
 	}

@@ -83,6 +83,12 @@ class ModalWindow_editService extends React.Component {
     }
 }
 
+const mapToList = data => {
+    const arr = [];
+    Object.keys(data).map(it => arr.push({serviceName: it, addr: data[it]}));
+    return arr;
+}
+
 class ServiceRegistry extends React.Component {
     constructor(props) {
         super(props);
@@ -96,7 +102,16 @@ class ServiceRegistry extends React.Component {
         this.deleteToRemote = this.deleteToRemote.bind(this);
         this.openModifyWindow = this.openModifyWindow.bind(this);
         this.modifyItemToRemote = this.modifyItemToRemote.bind(this);
-        this.state = {serviceList: [{serviceName: "couchdb", addr: "127.0.0.1:8088"}]};
+        this.state = {};
+    }
+
+    componentDidMount() {
+        const that = this;
+        getListFromRemote("manager/v1/serviceMap").then(data => {
+            that.setState({serviceList: mapToList(data)}); // 初始化数据
+        }).catch(error => {
+            that.setState({serviceList: [], msg: {type: "error", context: error}});
+        });
     }
 
     static closeMenu(dom) {
@@ -113,46 +128,58 @@ class ServiceRegistry extends React.Component {
     modifyItemToRemote(data, flag) {
         const [
             {serviceList= [], msg= {}},
-            {serviceName}
+            {serviceName, addr},
+            that
         ] = [
             this.state,
-            data
+            data,
+            this
         ];
-        if (!flag) {
-            return ;
-        }
+        if (!flag) return ;
         const index = serviceList.findIndex(item => {
             return item.serviceName == serviceName;
         });
         if (-1 === index) {
             Object.assign(msg, {type: "error", context: "服务映射不存在于注册中心..."});
-            this.setState({msg});
-            return 
+            that.setState({msg});
+            return ;
         }
-        serviceList[index] = data;
-        Object.assign(msg, {type: "success", context: "服务修改成功..."});
-        this.setState({serviceList, msg});
+        appendToRemote({serviceName:serviceName, serviceAddr:addr}, "manager/v1/serviceMap").then(() => {
+            serviceList[index] = data;
+            Object.assign(msg, {type: "success", context: "服务修改成功..."});
+            that.setState({serviceList, msg});
+        }).catch(error => {
+            Object.assign(msg, {type: "error", context: error});
+            that.setState({msg});
+        });
     }
 
-    appendItemToRemote(data, flag) {
+    appendItemToRemote(data) {
         const [
             {serviceList= [], msg= {}},
-            {serviceName, addr}
+            {serviceName, addr},
+            that
         ] = [
             this.state,
-            data
+            data,
+            this
         ];
         const index = serviceList.findIndex(item => {
             return item.serviceName == serviceName;
         });
         if (-1 !== index) {
             Object.assign(msg, {type: "error", context: "服务已存在..."});
-            this.setState({msg});
-            return 
+            that.setState({msg});
+            return ;
         }
-        serviceList.push({serviceName, addr});
-        Object.assign(msg, {type: "success", context: "服务注册成功..."});
-        this.setState({serviceList, msg});
+        newToRemote({serviceName, serviceAddr:addr}, "manager/v1/serviceMap").then(() => {
+            serviceList.push({serviceName, addr});
+            Object.assign(msg, {type: "success", context: "服务注册成功..."});
+            that.setState({serviceList, msg});
+        }).catch(error => {
+            Object.assign(msg, {type: "error", context: error});
+            that.setState({msg});
+        });
     }
 
     openModal() {
@@ -160,13 +187,21 @@ class ServiceRegistry extends React.Component {
     }
 
     deleteToRemote(index) {
+        const that = this;
         const {serviceList= [], msg= {}} = this.state;
-        const service = serviceList[index];
-        Object.assign(msg, {type: "success", context: "删除成功..."});
-        if (-1 !== index) {
-            serviceList.splice(index, 1)
+        if (-1 === index) {
+            Object.assign(msg, {type: "error", context: "删除失败:服务未注册..."}); 
+            return ;
         }
-        this.setState({msg, serviceList});
+        const service = serviceList[index];
+        deleteFromRemote({serviceName: service.serviceName}, "manager/v1/serviceMap").then(() => {
+            serviceList.splice(index, 1)
+            Object.assign(msg, {type: "success", context: "删除成功..."});
+            that.setState({msg, serviceList});
+        }).catch(error => {
+            Object.assign(msg, {type: "error", context: error});
+            that.setState({msg, serviceList});
+        });
     }
 
     openModifyWindow(index) {
