@@ -128,7 +128,7 @@ class ServiceRegistry extends React.Component {
     modifyItemToRemote(data, flag) {
         const [
             {serviceList= [], msg= {}},
-            {serviceName},
+            {serviceName, addr},
             that
         ] = [
             this.state,
@@ -144,8 +144,7 @@ class ServiceRegistry extends React.Component {
             that.setState({msg});
             return ;
         }
-        const service = serviceList[index];
-        appendToRemote({serviceName:service.serviceName, serviceAddr:service.addr}, "manager/v1/serviceMap").then(() => {
+        appendToRemote({serviceName:serviceName, serviceAddr:addr}, "manager/v1/serviceMap").then(() => {
             serviceList[index] = data;
             Object.assign(msg, {type: "success", context: "服务修改成功..."});
             that.setState({serviceList, msg});
