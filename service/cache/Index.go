@@ -135,7 +135,8 @@ func SendWhiteListToRemote(key string) {
 }
 
 func toRemote(action string, key ...interface{}) (interface{}, error) {
-	conn, err := redis.Dial("tcp", redisAddr)
+	conn, err := redis.DialTimeout("tcp", redisAddr, 3000, 3000, 3000)
+	// conn, err := redis.Dial("tcp", redisAddr)
 	if nil != err {
 		logger.Error("can't connect redis service")
 		return nil, err
