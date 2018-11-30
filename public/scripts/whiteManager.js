@@ -1,6 +1,5 @@
 "use strict";
 
-
 class ModalWindow_alert extends React.Component {
     constructor(props) {
         super(props);
@@ -144,7 +143,7 @@ class MsgAlert extends React.Component {
 
 const jsonToQueryStr = data => {
     const item = [];
-    Object.keys(data).map(key => item.push(encodeURIComponent(`${key}=${data[key]}`)));
+    Object.keys(data).map(key => item.push(`${key}=${encodeURIComponent(data[key])}`));
     return item.join("&");
 };
 
@@ -172,6 +171,7 @@ const deleteFromRemote = (data, path) => new Promise((resolve, reject) => {
     xhr.timeout = 15 * 1000;
     xhr.ontimeout = () => reject(new Error('time is up!'));
     xhr.open("DELETE", path+"?"+jsonToQueryStr(data));
+    xhr.setRequestHeader("cache-control", "no-cache");
     xhr.send();
     xhr.onreadystatechange = () => {
         if (4 === xhr.readyState) {
@@ -246,16 +246,29 @@ class WhiteManager extends React.Component {
     }
 
     modifyToRemote(data, flag, oldData) {
-        console.log(data, flag, oldData);
-        const {msg = {}, list} = this.state;
+        if (!flag) return;
+        const that = this;
+        const {msg = {}, list} = that.state;
+        if (data === oldData) {
+            Object.assign(msg, {type: "error", context: "未被修改..."});
+            that.setState({msg});
+            return;
+        }
         const index = list.findIndex(it => oldData === it);
         if (-1 === index) {
             Object.assign(msg, {type: "error", context: "数据已被删除..."});
+            that.setState({msg});
             return;
         }
-        list[index] = data;
-        Object.assign(msg, {type: "success", context: "保存成功..."});
-        this.setState({msg, list});
+        Promise.all([deleteFromRemote({item: oldData}, "manager/v1/whiteList")
+            , appendToRemote({item: data}, "manager/v1/whiteList")]).then(() => {
+            list[index] = data;
+            Object.assign(msg, {type: "success", context: "修改成功..."});
+            that.setState({msg, list});
+        }).catch(error => {
+            Object.assign(msg, {type: "error", context: error});
+            that.setState({msg});
+        });
     }
 
     appendItemToRemote(data, flag) {
