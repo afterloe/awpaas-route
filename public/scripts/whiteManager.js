@@ -1,150 +1,11 @@
 "use strict";
 
-class ModalWindow_alert extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    closeModal(event) {
-        const key = event.target.getAttribute("dataClose") || "";
-        if (-1 == key) {
-            ReactDOM.unmountComponentAtNode(document.getElementById("modal"));
-        }
-    }
-
-    render() {
-        const {title = "确认删除？", context = "111111"} = this.props;
-        return (
-            <div className="modal fade bd-example-modal-sm show" tabIndex="-1" dataClose="-1" onClick={this.closeModal}>
-                <div className="modal-dialog modal-dialog-centered bd-example-modal-sm">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h6 className="modal-title">{title}</h6>
-                        </div>
-                        <div className="modal-body">
-                            <div className="row-container">
-                                {context}
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" dataClose="-1" className="btn btn-secondary">取消</button>
-                            <button type="button" className="btn btn-primary" onClick={() => {
-                                this.props.callback(this.props.value);
-                                ReactDOM.unmountComponentAtNode(document.getElementById("modal"));
-                            }}>确认</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-}
-
-class ModalWindow extends React.Component {
-    constructor(props) {
-        super(props);
-        const {title = "", itemName = "", value = ""} = this.props;
-        this.state = {title, itemName, value};  // 初始化数据
-        this.closeModal = this.closeModal.bind(this);
-        this.inputChange = this.inputChange.bind(this);
-        this.saveInfo = this.saveInfo.bind(this);
-        this.blurActive = this.blurActive.bind(this);
-        this.getFocus = this.getFocus.bind(this);
-    }
-
-    inputChange(event) {
-        const v = event.currentTarget.value || "";
-        this.setState({value: v, flag: "" != v});
-    }
-
-    closeModal(event) {
-        const key = event.target.getAttribute("dataClose") || "";
-        if (-1 == key) {
-           ReactDOM.unmountComponentAtNode(document.getElementById("modal"));
-        }
-    }
-
-    saveInfo() {
-        const {value, flag} = this.state;
-        this.props.callback(value, flag, this.props.value);
-        ReactDOM.unmountComponentAtNode(document.getElementById("modal"));
-    }
-
-    blurActive(event) {
-        const dom = event.currentTarget;
-        dom.setAttribute("class", "input")
-    }
-
-    getFocus(event) {
-        const dom = event.currentTarget;
-        dom.setAttribute("class", "input isActive")
-    }
-
-    render() {
-        const {title = "", itemName = "", value = "", flag} = this.state;
-        return (
-            <div class="modal fade show" tabindex="-1" dataClose="-1" onClick={this.closeModal}>
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                    <div class="modal-header">
-                        <h6 class="modal-title">{title}</h6>
-                    </div>
-                    <div class="modal-body">
-                        <div class="label"><small>{itemName}</small></div>
-                        <div class="row-container">
-                            <div class="input-container">
-                                <input onChange={this.inputChange} onFocus={this.getFocus} onBlur={this.blurActive} defaultValue={value} class="input"
-                                autofocus="" tabindex="0" aria-label={itemName} />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" dataClose="-1" class="btn btn-secondary">取消</button>
-                        {flag? <button type="button" className="btn btn-primary" onClick={this.saveInfo}>保存</button>:
-                            <button type="button" className="btn btn-primary" disabled>保存</button>}
-                    </div>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-}
-
-class MsgAlert extends React.Component {
-    constructor(props) {
-        super(props);
-    }
-
-    generateClass(type) {
-        switch (type) {
-            case "success": return "alert alert-success";
-            case "error": return "alert alert-danger";
-            default: return "alert alert-primary";
-        }
-    }
-
-    componentDidMount() {
-        const that = this;
-        setTimeout(() => that.props.closeAlert(), 3* 1000)
-    }
-
-    render() {
-        const {type, msg = "", closeAlert} = this.props;
-        return (
-            <div className={this.generateClass(type)} role="alert">
-                {msg}
-                <button type="button" className="close" onClick={closeAlert}>
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-        );
-    }
-}
-
 const generatorModif= async (old, n, path) => {
     await deleteFromRemote(old, path);
     await appendToRemote(n, path);
-}
+};
+
+const whiteManagerURL = "manager/v1/whiteList";
 
 class WhiteManager extends React.Component {
     constructor(props) {
@@ -163,7 +24,7 @@ class WhiteManager extends React.Component {
 
     componentDidMount() {
         const that = this;
-        getListFromRemote("manager/v1/whiteList").then(data => {
+        getListFromRemote(whiteManagerURL).then(data => {
             that.setState({list: data}); // 初始化数据
         }).catch(error => {
             that.setState({list: [], msg: {type: "error", context: error}});
@@ -175,7 +36,7 @@ class WhiteManager extends React.Component {
         const {msg = {}, list} = that.state;
         const index = list.findIndex(it => data === it);
         if (-1 !== index) {
-            deleteFromRemote({item: data}, "manager/v1/whiteList").then(() => {
+            deleteFromRemote({item: data}, whiteManagerURL).then(() => {
                 list.splice(index, 1);
                 Object.assign(msg, {type: "success", context: "删除成功..."});
                 that.setState({msg, list});
@@ -205,7 +66,7 @@ class WhiteManager extends React.Component {
             that.setState({msg});
             return;
         }
-        generatorModif({item: oldData}, {item: data}, "manager/v1/whiteList").then(() => {
+        generatorModif({item: oldData}, {item: data}, whiteManagerURL).then(() => {
             list[index] = data;
             Object.assign(msg, {type: "success", context: "修改成功..."});
             that.setState({msg, list});
@@ -221,7 +82,7 @@ class WhiteManager extends React.Component {
         const {msg = {}, list} = that.state;
         const index = list.findIndex(it => data === it);
         if (-1 === index) {
-            appendToRemote({item: data}, "manager/v1/whiteList").then(() => {
+            appendToRemote({item: data}, whiteManagerURL).then(() => {
                 list.push(data);
                 Object.assign(msg, {type: "success", context: "保存成功..."});
                 that.setState({msg, list});
@@ -263,7 +124,7 @@ class WhiteManager extends React.Component {
     syncToRemote() {
         const that = this;
         that.setState({msg: {type: "info", context: "同步中..."}});
-        getListFromRemote("manager/v1/whiteList").then(data => {
+        getListFromRemote(whiteManagerURL).then(data => {
             that.setState({list: data}); // 初始化数据
         }).catch(error => {
             that.setState({list: [], msg: {type: "error", context: error}});
