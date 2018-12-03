@@ -1,6 +1,6 @@
 "use strict";
 
-const generatorModif= async (old, n, path) => {
+const generatorModify= async (old, n, path) => {
     await deleteFromRemote(old, path);
     await appendToRemote(n, path);
 };
@@ -66,7 +66,7 @@ class WhiteManager extends React.Component {
             that.setState({msg});
             return;
         }
-        generatorModif({item: oldData}, {item: data}, whiteManagerURL).then(() => {
+        generatorModify({item: oldData}, {item: data}, whiteManagerURL).then(() => {
             list[index] = data;
             Object.assign(msg, {type: "success", context: "修改成功..."});
             that.setState({msg, list});
