@@ -45,6 +45,22 @@ func init() {
 		checkError(&exceptions.Error{Msg: "read json fail", Code: 500})
 	}
 	packageJson = pkg
+	readEnv() // 读取env中的信息进行覆盖package.json中的信息
+}
+
+/**
+	读取env中的数据进行覆盖package.json中的内容
+ */
+func readEnv() {
+	redis_addr := os.Getenv("REDIS_ADDR")
+	redis_port := os.Getenv("REDIS_PORT")
+	server := packageJson["server"]
+	if "" != redis_addr {
+		setByTarget(GetByTarget(server, "cache"), "addr", redis_addr)
+	}
+	if "" != redis_port {
+		setByTarget(GetByTarget(server, "cache"), "port", redis_port)
+	}
 }
 
 /**
@@ -58,9 +74,16 @@ func Get(key string) interface{} {
 }
 
 /**
+	反射设置map
+ */
+func setByTarget(target, key, value interface{}) {
+	reflect.ValueOf(target).SetMapIndex(reflect.ValueOf(key), reflect.ValueOf(value))
+}
+
+/**
 	反射获取map配置
  */
-func GetByTarget(target interface {}, key interface{}) interface{} {
+func GetByTarget(target interface{}, key interface{}) interface{} {
 	v := reflect.ValueOf(target)
 	value := v.MapIndex(reflect.ValueOf(key))
 	if !value.IsValid() {

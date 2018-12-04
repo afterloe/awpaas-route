@@ -17,18 +17,23 @@ var (
 )
 
 func init() {
-	defAddr = "127.0.0.1:8080"
+	defAddr = "0.0.0.0:8080"
 	cpuNumber = runtime.NumCPU()
 	pid = os.Getpid()
 }
 
-
+/**
+	启动默认服务
+ */
 func startDefault() {
 	logger.Info(fmt.Sprintf("listen parameter is null, will start server in %s default", defAddr))
 	logger.Info(fmt.Sprintf("server is init success... started pid is %d", pid))
 	cli.StartUpTCPServer(&defAddr, config.Get("custom").(map[string]interface{}))
 }
 
+/**
+	启动缓存服务
+ */
 func startUpCacheService(cfg map[string]interface{}) {
 	addr, port := cfg["addr"], cfg["port"]
 	if nil == addr {
@@ -42,6 +47,9 @@ func startUpCacheService(cfg map[string]interface{}) {
 	cli.StartUpCacheServer(&addrStr, cfg["channel"].([]interface{}))
 }
 
+/**
+	启动网关服务
+ */
 func startUpGatewayService(cfg map[string]interface{}) {
 	addr, port := cfg["addr"], cfg["port"]
 	if nil == addr {
@@ -56,6 +64,9 @@ func startUpGatewayService(cfg map[string]interface{}) {
 	cli.StartUpTCPServer(&addrStr, config.Get("custom").(map[string]interface{}))
 }
 
+/**
+	启动守护进程
+ */
 func startUpDaemonService(cfg map[string]interface{}) {
 	addr, port := cfg["addr"], cfg["port"]
 	if nil == addr {
@@ -69,6 +80,9 @@ func startUpDaemonService(cfg map[string]interface{}) {
 	cli.StartUpDaemonService(&addrStr, config.Get("custom"))
 }
 
+/**
+	多核设置
+ */
 func multiServiceCfg(cfg map[string]interface{}) {
 	flg := cfg["enable"]
 	if nil == flg {

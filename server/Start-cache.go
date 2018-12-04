@@ -25,8 +25,12 @@ func whiteListChange(action, key string) {
 }
 
 func handleMessage(channel string, data []byte) {
-	// ACTION\t\nKEY
+	// ACTION\\t\\nKEY
 	content := strings.Split(string(data), "\\t\\n")
+	if 2 < len(content) {
+		logger.Error("format msg fail ->" + string(data))
+		return
+	}
 	switch channel {
 	case "serviceDiscovery":
 		serviceDiscovery(content[0], content[1])
@@ -38,7 +42,8 @@ func handleMessage(channel string, data []byte) {
 }
 
 func StartUpCacheServer(addr *string, channel []interface{}) {
-	conn, err := redis.Dial("tcp", *addr)
+	conn, err := redis.Dial("tcp", *addr, redis.DialConnectTimeout(3000),
+		redis.DialReadTimeout(3000), redis.DialWriteTimeout(3000))
 	if nil != err {
 		logger.Error("can't get any from remote.. please check network -> " + *addr)
 		return
