@@ -11,7 +11,7 @@ import (
 
 var (
 	redisAddr string // redis 连接地址
-	fuse bool // 熔断表示
+	fuse bool // 熔断标识
 	startTime time.Time // 熔断启动时间
 )
 
