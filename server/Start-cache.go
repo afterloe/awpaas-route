@@ -38,7 +38,8 @@ func handleMessage(channel string, data []byte) {
 }
 
 func StartUpCacheServer(addr *string, channel []interface{}) {
-	conn, err := redis.Dial("tcp", *addr)
+	conn, err := redis.Dial("tcp", *addr, redis.DialConnectTimeout(3000),
+		redis.DialReadTimeout(3000), redis.DialWriteTimeout(3000))
 	if nil != err {
 		logger.Error("can't get any from remote.. please check network -> " + *addr)
 		return
