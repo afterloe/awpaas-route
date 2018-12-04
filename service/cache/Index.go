@@ -8,6 +8,7 @@ import (
 	"../../exceptions"
 	"../../integrate/logger"
 	"fmt"
+	"time"
 )
 
 var (
@@ -17,6 +18,8 @@ var (
 	whiteListKey string
 	addrMapKey string
 	redisAddr string
+	fuse bool
+	startTime time.Time
 )
 
 func init() {
@@ -32,6 +35,8 @@ func init() {
 	redisAddr = fmt.Sprintf("%s:%s",
 		config.GetByTarget(cache, "addr"),
 		config.GetByTarget(cache, "port"))
+	fuse = false
+	startTime = time.Now()
 }
 
 func LoadCache(list []interface{}) {
@@ -135,10 +140,16 @@ func SendWhiteListToRemote(key string) {
 }
 
 func toRemote(action string, key ...interface{}) (interface{}, error) {
+	// 如果熔断开启 并且 两次间隔没有超过30秒 直接返回
+	if fuse && 30 * 1000 > time.Now().Sub(startTime) {
+		return nil, &exceptions.Error{Msg: "fuse is open", Code: 500}
+	}
 	conn, err := redis.Dial("tcp", redisAddr, redis.DialConnectTimeout(3000),
 		redis.DialReadTimeout(3000), redis.DialWriteTimeout(3000))
 	if nil != err {
 		logger.Error("can't connect redis service")
+		fuse = true
+		startTime = time.Now()
 		return nil, err
 	}
 	defer conn.Close()
