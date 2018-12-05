@@ -42,7 +42,7 @@ func StartUpDaemonService(addr *string, cfg interface{}) {
 
 func initDaemonService(engine *gin.Engine, cfg interface{}) {
 	engine.Use(gin.Recovery())
-	engine.Use(logger.Logger())
+	engine.Use(logger.GinLogger())
 	engine.Use(notSupper.HasError())
 	engine.NoRoute(notSupper.NotFound(&notFoundStr))
 	engine.NoMethod(notSupper.NotSupper(&notSupperStr))

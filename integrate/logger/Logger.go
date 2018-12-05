@@ -10,32 +10,35 @@ import (
 
 var (
 	out, err io.Writer
-	infoLayout, logLayout, errorLayout, timeFormat string
+	ginLogLayout, logLayout, timeFormat string
 )
 
 func init() {
 	out = os.Stdout
 	err = os.Stderr
 	timeFormat = "2006-01-02 - 15:04:05"
-	logLayout = "[awpaas-route][log  ][%v] - %3d | %13v | %15s | %-7s %s\n"
-	infoLayout = "[awpaas-route][info ][%v] - %s \n"
-	errorLayout = "[awpaas-route][error][%v] - %s \n"
+	//ginLogLayout = "[awpaas-route][%15s][log  ][%v] - %3d | %13v | %15s | %-7s %s\n"
+	ginLogLayout = "[awpaas-route][%-7s][%-5s][%v] - %3d | %13v | %15s | %-7s %s\n"
+	logLayout = "[awpaas-route][%-7s][%-5s][%v] - %-7s\n"
 }
 
-func GetFormatTime() string {
+func getFormatTime() string {
 	return time.Now().Format(timeFormat)
 }
 
-func Error(info interface{}) {
-	fmt.Fprintf(err, errorLayout, GetFormatTime(), info)
+func Error(args ...interface{}) {
+	fmt.Fprintf(err, logLayout, "error", args[0], getFormatTime(), args[1])
 }
 
-func Info(info interface{}) {
-	fmt.Fprintf(out, infoLayout, GetFormatTime(), info)
+func Info(args ...interface{}){
+	fmt.Fprintf(err, logLayout, "info", args[0], getFormatTime(), args[1])
 }
 
-func Logger() func(*gin.Context) {
+func Logger(args ...interface{}) {
+	fmt.Fprintf(err, logLayout, "log", args[0], getFormatTime(), args[1])
+}
 
+func GinLogger() func(*gin.Context) {
 	return func(c *gin.Context) {
 		// Start timer
 		start := time.Now()
@@ -49,7 +52,11 @@ func Logger() func(*gin.Context) {
 		end := time.Now()
 		latency := end.Sub(start)
 
-		clientIP := c.ClientIP()
+		//clientIP := c.ClientIP()
+		clientIP := c.Request.Header["X-Real-IP"]
+		if 0 == len(clientIP) {
+			clientIP = append(clientIP, "127.0.0.1")
+		}
 		method := c.Request.Method
 		statusCode := c.Writer.Status()
 
@@ -57,7 +64,7 @@ func Logger() func(*gin.Context) {
 			path = path + "?" + raw
 		}
 
-		fmt.Fprintf(out, logLayout, end.Format(timeFormat), statusCode,
+		fmt.Fprintf(out, ginLogLayout, "daemon", "log", end.Format(timeFormat), statusCode,
 			latency, clientIP, method, path)
 	}
 }
