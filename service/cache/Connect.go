@@ -48,8 +48,7 @@ func toRemote(action string, key ...interface{}) (interface{}, error) {
 	if fuse && 30 * 1000 > time.Now().Sub(startTime) {
 		return nil, &exceptions.Error{Msg: "fuse is open", Code: 500}
 	}
-	conn, err := redis.Dial("tcp", redisAddr, redis.DialConnectTimeout(3000),
-		redis.DialReadTimeout(3000), redis.DialWriteTimeout(3000))
+	conn, err := redis.Dial("tcp", redisAddr)
 	if nil != err {
 		logger.Error("cache", "can't connect redis service")
 		fuse = true
@@ -57,5 +56,5 @@ func toRemote(action string, key ...interface{}) (interface{}, error) {
 		return nil, err
 	}
 	defer conn.Close()
-	return conn.Do(action, key...)
+	return redis.DoWithTimeout(conn, 3000, action, key...)
 }
