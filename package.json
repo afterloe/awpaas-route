@@ -8,7 +8,7 @@
   },
   "info": {
     "name": "awpaas-route",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "author": "afterloe[lm6289511@gmai.com]",
     "homePage": "https://github.com/afterloe",
     "remarks": "统一访问网关，转发socket服务，实现服务鉴权"
