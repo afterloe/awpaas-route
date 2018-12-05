@@ -45,13 +45,13 @@ func handleMessage(channel string, data []byte) {
 }
 
 func StartUpCacheServer(addr *string, channel []interface{}) {
-	conn, err := redis.Dial("tcp", *addr, redis.DialConnectTimeout(3 * time.Second),
-		redis.DialReadTimeout(3 * time.Second), redis.DialWriteTimeout(3 * time.Second))
+	conn, err := redis.Dial("tcp", *addr, redis.DialConnectTimeout(3 * time.Second))
 	if nil != err {
 		fmt.Println(err)
 		logger.Error("cache", "can't get any from remote.. please check network -> " + *addr)
 		return
 	}
+	defer logger.Error("cache", "linked service is down")
 	defer conn.Close()
 	if nil != err {
 		logger.Error("cache", fmt.Sprintf("can't link cache server to %s ", *addr))
