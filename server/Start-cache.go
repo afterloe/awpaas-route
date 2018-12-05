@@ -45,16 +45,16 @@ func StartUpCacheServer(addr *string, channel []interface{}) {
 	conn, err := redis.Dial("tcp", *addr, redis.DialConnectTimeout(3000),
 		redis.DialReadTimeout(3000), redis.DialWriteTimeout(3000))
 	if nil != err {
-		logger.Error("can't get any from remote.. please check network -> " + *addr)
+		logger.Error("cache", "can't get any from remote.. please check network -> " + *addr)
 		return
 	}
 	defer conn.Close()
 	if nil != err {
-		logger.Error(fmt.Sprintf("can't link cache server to %s ", *addr))
+		logger.Error("cache", fmt.Sprintf("can't link cache server to %s ", *addr))
 	}
 	psc := redis.PubSubConn{Conn: conn}
 	psc.Subscribe(channel...)
-	logger.Info("cache service linked is ready ...")
+	logger.Info("cache", "cache service linked is ready ...")
 	for {
 		switch v := psc.Receive().(type) {
 		case redis.Message:

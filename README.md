@@ -7,3 +7,9 @@
 * 分发请求
 * 权限拦截
 * 请求日志记录
+
+## Hook 参数
+```sbtshell
+env REDIS_ADDR
+env REDIS_PORT
+```

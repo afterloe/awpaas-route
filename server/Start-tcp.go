@@ -48,12 +48,12 @@ func StartUpTCPServer(addr *string, serverCfg map[string]interface{}) {
 	netListen, err := net.Listen("tcp", *addr)
 	defer netListen.Close()
 	if nil != err {
-		logger.Error(fmt.Sprintf("can't start server in %s ", *addr))
-		logger.Error(err.Error())
+		logger.Error("gateway", fmt.Sprintf("can't start server in %s ", *addr))
+		logger.Error("gateway", err.Error())
 		os.Exit(100)
 	}
-	logger.Info(fmt.Sprintf("auto config -- tokenName is %s, bufferSize is %d", key, buffSize))
-	logger.Info("gateway service is ready ...")
+	logger.Info("gateway", fmt.Sprintf("auto config -- tokenName is %s, bufferSize is %d", key, buffSize))
+	logger.Info("gateway", "gateway service is ready ...")
 	for {
 		conn, err := netListen.Accept() // 获取客户端连接
 		if nil != err {
@@ -77,7 +77,7 @@ func doForwardConn(conn net.Conn) {
 		arr := strings.Split(string(buffer), "\r\n")
 		err, reqInfo := extractAuthInfo(arr) // 提取鉴权信息
 		if nil != err { // 如果提取出现异常，则跳转到异常界面
-			logger.Error("accept format exception")
+			logger.Error("gateway", "accept format exception")
 			callDaemon(400, "format%20exception", conn)
 			return
 		}
@@ -87,24 +87,24 @@ func doForwardConn(conn net.Conn) {
 			return
 		} 
 		if !reqInfo.Token.Flag { // 不在白名单之内，又不存在token信息则报错
-			logger.Info("can't find authorize info.")
+			logger.Info("gateway", "can't find authorize info.")
 			callDaemon(400, "can't%20find%20authorize%20info.", conn)
 			return
 		}
 		if nil != query_authInfo(reqInfo) { // 查询鉴权信息
-			logger.Info("authentication information query failed.")
+			logger.Info("gateway", "authentication information query failed.")
 			callDaemon(401, "can't%20find%20authorize%20info.", conn)
 			return
 		}
 		flag, remote = cache.MapToAddress(reqInfo.ServerName) // 查询服务映射表
 		if !flag { // 服务列表未查询到
-			logger.Info("service not found.")
+			logger.Info("gateway", "service not found.")
 			callDaemon(404, "can't%20find%20" + reqInfo.ServerName + "%20info.", conn)
 			return
 		} 
 		forward(reqInfo, remote, arr, conn)
 	} else { // 返回服务异常
-		logger.Error("accept error.")
+		logger.Error("gateway", "accept error.")
 		callDaemon(400, "can't%20find%20authorize%20info.", conn)
 	}
 }
@@ -123,7 +123,7 @@ func callDaemon(code int, msg string, client net.Conn) {
 	remote, err := net.Dial("tcp", daemonAddr)
 	defer remote.Close()
 	if nil != err {
-		logger.Info(err)
+		logger.Info("gateway", err)
 		return
 	}
 	linkAndConnection(strings.Join(content, "\r\n"), remote, client)
@@ -174,10 +174,10 @@ func query_authInfo(info *authentication.ReqInfo) error {
 	)
 	flag, uid := authorize.QueryAuthorizeInfo(token, serviceName, url)
 	if !flag {
-		logger.Info(fmt.Sprintf("[failed] - %s access %s", token, requestURI))
+		logger.Info("gateway", fmt.Sprintf("[failed] - %s access %s", token, requestURI))
 		return &exceptions.Error{Msg: "token is error", Code: 400}
 	}
-	logger.Info(fmt.Sprintf("[success] - %s access %s", uid, requestURI))
+	logger.Info("gateway", fmt.Sprintf("[success] - %s access %s", uid, requestURI))
 	return nil
 }
 
@@ -196,10 +196,10 @@ func forward(req *authentication.ReqInfo, addr string, content []string, client 
 		return
 	}
 	defer remote.Close()
-	content[1] = fmt.Sprintf("Host: %s", addr) 
+	content[1] = fmt.Sprintf("Host: %s", addr)
 	content[0] = fmt.Sprintf("%s %s %s", req.Method, "/" + req.ReqUrl, req.Way)
 	if nil != err {
-		logger.Info(err)
+		logger.Info("gateway", err)
 		return
 	}
 	if "CONNECT" == req.Method {
