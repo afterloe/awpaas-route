@@ -17,7 +17,6 @@ func init() {
 	out = os.Stdout
 	err = os.Stderr
 	timeFormat = "2006-01-02 - 15:04:05"
-	//ginLogLayout = "[awpaas-route][%15s][log  ][%v] - %3d | %13v | %15s | %-7s %s\n"
 	ginLogLayout = "[awpaas-route][%-7s][%-5s][%v] - %3d | %13v | %15s | %-7s %s\n"
 	logLayout = "[awpaas-route][%-7s][%-5s][%v] - %-7s\n"
 }

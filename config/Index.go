@@ -15,7 +15,7 @@ var packageJson map[string]interface{}
 
 func checkError(err error) {
 	if nil != err {
-		logger.Error(err.Error())
+		logger.Error("service", err.Error())
 		os.Exit(101)
 		return
 	}

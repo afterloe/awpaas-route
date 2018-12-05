@@ -51,7 +51,7 @@ func toRemote(action string, key ...interface{}) (interface{}, error) {
 	conn, err := redis.Dial("tcp", redisAddr, redis.DialConnectTimeout(3000),
 		redis.DialReadTimeout(3000), redis.DialWriteTimeout(3000))
 	if nil != err {
-		logger.Error("can't connect redis service")
+		logger.Error("cache", "can't connect redis service")
 		fuse = true
 		startTime = time.Now()
 		return nil, err

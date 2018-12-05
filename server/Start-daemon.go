@@ -34,8 +34,8 @@ func StartUpDaemonService(addr *string, cfg interface{}) {
 	}
 	e := server.ListenAndServe()
 	if nil != e {
-		logger.Error("server can't to run")
-		logger.Error(e.Error())
+		logger.Error("daemon", "server can't to run")
+		logger.Error("daemon", e.Error())
 		os.Exit(102)
 	}
 }
@@ -49,7 +49,7 @@ func initDaemonService(engine *gin.Engine, cfg interface{}) {
 	infoEntryPoint(engine)
 	routers.Execute(engine.Group("/v1"))
 	cache.LoadCache(config.GetByTarget(cfg,"whiteList").([]interface{}))
-	logger.Info("daemon service is ready ...")
+	logger.Info("daemon", "daemon service is ready ...")
 }
 
 func infoEntryPoint(c *gin.Engine) {
