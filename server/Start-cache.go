@@ -6,10 +6,11 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"fmt"
 	"strings"
+	"time"
 )
 
 func serviceDiscovery(action, key string) {
-	fmt.Printf("reflush service address map %s %s\r\n", action, key)
+	logger.Logger("cache", fmt.Sprintf("do %-7s by %-7s", action, key))
 	switch action {
 	case "GET":
 		cache.GetAddressMapFromRemote(key)
@@ -17,7 +18,7 @@ func serviceDiscovery(action, key string) {
 }
 
 func whiteListChange(action, key string) {
-	fmt.Printf("reflush white list %s %s\r\n", action, key)
+	logger.Logger("cache", fmt.Sprintf("do %-7s by %-7s", action, key))
 	switch action {
 	case "GET":
 		cache.GetWhiteListFromRemote(key)
@@ -26,9 +27,11 @@ func whiteListChange(action, key string) {
 
 func handleMessage(channel string, data []byte) {
 	// ACTION\\t\\nKEY
-	content := strings.Split(string(data), "\\t\\n")
+	context := string(data)
+	content := strings.Split(context, "\\t\\n")
+	logger.Logger("cache", fmt.Sprintf("receive %-7s from %-7s", context, channel))
 	if 2 < len(content) {
-		logger.Error("format msg fail ->" + string(data))
+		logger.Error("format msg fail ->" + context)
 		return
 	}
 	switch channel {
@@ -42,7 +45,8 @@ func handleMessage(channel string, data []byte) {
 }
 
 func StartUpCacheServer(addr *string, channel []interface{}) {
-	conn, err := redis.Dial("tcp", *addr)
+	conn, err := redis.Dial("tcp", *addr, redis.DialConnectTimeout(3 * time.Second),
+		redis.DialReadTimeout(3 * time.Second), redis.DialWriteTimeout(3 * time.Second))
 	if nil != err {
 		fmt.Println(err)
 		logger.Error("cache", "can't get any from remote.. please check network -> " + *addr)

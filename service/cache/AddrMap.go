@@ -4,6 +4,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"reflect"
 	"../../exceptions"
+	"../../integrate/logger"
 )
 
 var (
@@ -54,6 +55,7 @@ func GetAddMapFromDisk() interface{} {
 func GetAddressMapFromRemote(key string) bool {
 	reply, err := redis.StringMap(toRemote("HGETALL", key))
 	if nil != err {
+		logger.Error("cache", err)
 		return false
 	}
 	addressMap = reply
