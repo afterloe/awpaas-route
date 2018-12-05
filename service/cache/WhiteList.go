@@ -65,6 +65,7 @@ func GetWhiteListFromDisk() interface{} {
 func GetWhiteListFromRemote(key string) bool {
 	content, err := redis.String(toRemote("GET", key))
 	if nil != err {
+		logger.Error("cache", err)
 		return false
 	}
 	list := strings.Split(content, "\\t\\n")
