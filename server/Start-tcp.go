@@ -155,7 +155,7 @@ func extractAuthInfo(arr []string) (error, *authentication.ReqInfo) {
 	@return: string - 映射的地址
 */
 func query_whiteList(req *authentication.ReqInfo) (bool, string) {
-	return cache.QueryWhiteList(req.ServerName + "/" + req.ReqUrl,
+	return cache.QueryWhiteList(req.ServerName + req.ReqUrl,
 		req.ServerName)
 }
 
@@ -170,7 +170,7 @@ func query_authInfo(info *authentication.ReqInfo) error {
 		token = info.Token.Value
 		serviceName = info.ServerName
 		url = info.ReqUrl
-		requestURI = serviceName + "/" + url
+		requestURI = serviceName + url
 	)
 	flag, uid := authorize.QueryAuthorizeInfo(token, serviceName, url)
 	if !flag {
@@ -191,15 +191,22 @@ func query_authInfo(info *authentication.ReqInfo) error {
 func forward(req *authentication.ReqInfo, addr string, content []string, client net.Conn) {
 	remote, err := net.Dial("tcp", addr)
 	if nil != err {
-		fmt.Println(err)
+		logger.Error("gateway", err)
 		callDaemon(502, "service%20inaccessibility", client)
 		return
 	}
 	defer remote.Close()
-	content[1] = fmt.Sprintf("Host: %s", addr)
-	content[0] = fmt.Sprintf("%s %s %s", req.Method, "/" + req.ReqUrl, req.Way)
+	for index, it := range content {
+		if 1 == strings.Count(it, " HTTP/") {
+			content[index] = fmt.Sprintf("%s %s %s", req.Method, req.ReqUrl, req.Way)
+		}
+		if 1 == strings.Count(it, "Host: ") {
+			content[index] = fmt.Sprintf("Host: %s", addr)
+		}
+	}
+	logger.Logger("gateway", fmt.Sprintf("%-7s %-7s %s", req.Method, req.ServerName, req.ReqUrl))
 	if nil != err {
-		logger.Info("gateway", err)
+		logger.Error("gateway", err)
 		return
 	}
 	if "CONNECT" == req.Method {
