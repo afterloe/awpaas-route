@@ -26,15 +26,15 @@ func getFormatTime() string {
 }
 
 func Error(args ...interface{}) {
-	fmt.Fprintf(err, logLayout, "error", args[0], getFormatTime(), args[1])
+	fmt.Fprintf(err, logLayout, args[0], "error", getFormatTime(), args[1])
 }
 
 func Info(args ...interface{}){
-	fmt.Fprintf(err, logLayout, "info", args[0], getFormatTime(), args[1])
+	fmt.Fprintf(out, logLayout, args[0], "info", getFormatTime(), args[1])
 }
 
 func Logger(args ...interface{}) {
-	fmt.Fprintf(err, logLayout, "log", args[0], getFormatTime(), args[1])
+	fmt.Fprintf(out, logLayout, args[0], "log", getFormatTime(), args[1])
 }
 
 func GinLogger() func(*gin.Context) {
@@ -51,10 +51,10 @@ func GinLogger() func(*gin.Context) {
 		end := time.Now()
 		latency := end.Sub(start)
 
-		//clientIP := c.ClientIP()
-		clientIP := c.Request.Header["X-Real-IP"]
-		if 0 == len(clientIP) {
-			clientIP = append(clientIP, "127.0.0.1")
+		clientIP := c.ClientIP()
+		proxyIP := c.Request.Header["X-Real-IP"]
+		if 0 != len(proxyIP) {
+			clientIP = proxyIP[0]
 		}
 		method := c.Request.Method
 		statusCode := c.Writer.Status()
