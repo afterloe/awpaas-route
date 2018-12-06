@@ -9,22 +9,22 @@ import (
 	"../service/authorize"
 	"../exceptions"
 	"fmt"
+	"strings"
+
 	"bytes"
 	"io"
-	"strings"
-	// "time"
 )
 
 var (
 	key string
-	buffSize int
+	capacity int
 	needToken bool
 	daemonAddr string
 )
 
 func init() {
 	key = "access-token"
-	buffSize = 1024
+	capacity = 1024
 	needToken = false
 	daemonAddr = "127.0.0.1:8081"
 }
@@ -40,7 +40,7 @@ func StartUpTCPServer(addr *string, serverCfg map[string]interface{}) {
 		key = serverCfg["tokenName"].(string)
 	} 
 	if nil != serverCfg["size"] {
-		buffSize = int(serverCfg["size"].(float64))
+		capacity = int(serverCfg["size"].(float64))
 	}
 	if nil != serverCfg["needToken"] {
 		needToken = serverCfg["needToken"].(bool)
@@ -52,7 +52,7 @@ func StartUpTCPServer(addr *string, serverCfg map[string]interface{}) {
 		logger.Error("gateway", err.Error())
 		os.Exit(100)
 	}
-	logger.Info("gateway", fmt.Sprintf("auto config -- tokenName is %s, bufferSize is %d", key, buffSize))
+	logger.Info("gateway", fmt.Sprintf("auto config -- tokenName is %s, bufferSize is %d", key, capacity))
 	logger.Info("gateway", "gateway service is ready ...")
 	for {
 		conn, err := netListen.Accept() // 获取客户端连接
@@ -73,7 +73,7 @@ func StartUpTCPServer(addr *string, serverCfg map[string]interface{}) {
 func doForwardConn(conn net.Conn) {
 	defer conn.Close()
 	buffer := receiveData(conn) 
-	if 1 < len(buffer) {
+	if 0 != len(buffer) {
 		arr := strings.Split(string(buffer), "\r\n")
 		err, reqInfo := extractAuthInfo(arr) // 提取鉴权信息
 		if nil != err { // 如果提取出现异常，则跳转到异常界面
@@ -104,7 +104,7 @@ func doForwardConn(conn net.Conn) {
 		} 
 		forward(reqInfo, remote, arr, conn)
 	} else { // 返回服务异常
-		logger.Error("gateway", "accept error.")
+		logger.Error("gateway", "accept error. - " + string(buffer))
 		callDaemon(400, "can't%20find%20authorize%20info.", conn)
 	}
 }
@@ -127,8 +127,6 @@ func callDaemon(code int, msg string, client net.Conn) {
 		return
 	}
 	linkAndConnection(strings.Join(content, "\r\n"), remote, client)
-	// io.Copy(baseConn, remote)
-	// io.Copy(remote, baseConn)	
 }
 
 /**
@@ -155,7 +153,7 @@ func extractAuthInfo(arr []string) (error, *authentication.ReqInfo) {
 	@return: string - 映射的地址
 */
 func query_whiteList(req *authentication.ReqInfo) (bool, string) {
-	return cache.QueryWhiteList(req.ServerName + "/" + req.ReqUrl,
+	return cache.QueryWhiteList(req.ServerName + req.ReqUrl,
 		req.ServerName)
 }
 
@@ -170,7 +168,7 @@ func query_authInfo(info *authentication.ReqInfo) error {
 		token = info.Token.Value
 		serviceName = info.ServerName
 		url = info.ReqUrl
-		requestURI = serviceName + "/" + url
+		requestURI = serviceName + url
 	)
 	flag, uid := authorize.QueryAuthorizeInfo(token, serviceName, url)
 	if !flag {
@@ -191,15 +189,22 @@ func query_authInfo(info *authentication.ReqInfo) error {
 func forward(req *authentication.ReqInfo, addr string, content []string, client net.Conn) {
 	remote, err := net.Dial("tcp", addr)
 	if nil != err {
-		fmt.Println(err)
+		logger.Error("gateway", err)
 		callDaemon(502, "service%20inaccessibility", client)
 		return
 	}
 	defer remote.Close()
-	content[1] = fmt.Sprintf("Host: %s", addr)
-	content[0] = fmt.Sprintf("%s %s %s", req.Method, "/" + req.ReqUrl, req.Way)
+	for index, it := range content {
+		if 1 == strings.Count(it, " HTTP/") {
+			content[index] = fmt.Sprintf("%s %s %s", req.Method, req.ReqUrl, req.Way)
+		}
+		if 1 == strings.Count(it, "Host: ") {
+			content[index] = fmt.Sprintf("Host: %s", addr)
+		}
+	}
+	logger.Logger("gateway", fmt.Sprintf("%-7s %-7s %s", req.Method, req.ServerName, req.ReqUrl))
 	if nil != err {
-		logger.Info("gateway", err)
+		logger.Error("gateway", err)
 		return
 	}
 	if "CONNECT" == req.Method {
@@ -219,6 +224,8 @@ func linkAndConnection(content string, remote net.Conn, client net.Conn) {
 	remote.Write([]byte(content))
 	receiveBuf := receiveData(remote)
 	client.Write(receiveBuf)
+	//go io.Copy(client, remote)
+	//io.Copy(remote, client)
 }
 
 /**
@@ -226,13 +233,13 @@ func linkAndConnection(content string, remote net.Conn, client net.Conn) {
 
 	@param：conn - tcp连接
  */
-func receiveData(conn net.Conn) []byte {
-	var buf bytes.Buffer
-	buffer := make([]byte, buffSize)
+func receiveData(c net.Conn) []byte {
+	byteSlice := make([]byte, capacity)
+	buf := bytes.Buffer{}
 	for {
-		sizeNew, err := conn.Read(buffer)
-		buf.Write(buffer[:sizeNew])
-		if err == io.EOF || sizeNew < buffSize {
+		n, err := c.Read(byteSlice)
+		buf.Write(byteSlice[:n])
+		if io.EOF == err || n < capacity {
 			break
 		}
 	}
