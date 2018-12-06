@@ -34,7 +34,7 @@ func flushWhiteListCache(list []interface{}) {
  */
 func inWhiteList(reqUrl string) bool {
 	for _, item := range whiteListCache {
-		if strings.Contains(reqUrl, item) {
+		if 0 == strings.Index(reqUrl, item) {
 			return true
 		}
 	}
