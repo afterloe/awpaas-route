@@ -3,7 +3,18 @@ package authentication
 import (
 	"strings"
 	"../../exceptions"
+	"net/http"
 )
+
+func ExtractToken(req *http.Request, key string) *tokenInfo {
+	token := &tokenInfo{ false, ""}
+	value := req.Header.Get(key)
+	if "" != value {
+		token.Flag = true
+		token.Value = value
+	}
+	return token
+}
 
 /**
 	获取token 信息
