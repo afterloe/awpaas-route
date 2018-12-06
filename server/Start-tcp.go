@@ -95,8 +95,7 @@ func (*Pxy)ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		sendForward(req, rw, addr, client)
 		return
 	}
-	token := req.Header.Get(key)
-	if "" == token {
+	if "" == req.Header.Get(key) {
 		logger.Info("gateway", "can't find authorize info.")
 		sendDaemonForward(400, "can't%20find%20authorize%20info.", req, rw)
 		return
