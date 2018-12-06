@@ -10,22 +10,27 @@ import (
 	"strings"
 
 	"io"
+	"net"
+	"time"
 	"net/http"
-	"log"
 )
 
 var (
 	key string
-	capacity int
 	needToken bool
 	daemonAddr string
+	MaxIdleConns int
+	MaxIdleConnsPerHost int
+	IdleConnTimeout int
 )
 
 func init() {
 	key = "access-token"
-	capacity = 1024
 	needToken = false
 	daemonAddr = "127.0.0.1:8081"
+	MaxIdleConns = 100
+    MaxIdleConnsPerHost = 100
+    IdleConnTimeout = 90
 }
 
 func extractInfo(req *http.Request) *authentication.ReqInfo {
@@ -38,60 +43,69 @@ func extractInfo(req *http.Request) *authentication.ReqInfo {
 	}
 }
 
+func generatorClient() *http.Client {
+	client := &http.Client{
+        Transport: &http.Transport{
+            Proxy: http.ProxyFromEnvironment,
+            DialContext: (&net.Dialer{
+                Timeout:   30 * time.Second,
+            }).DialContext,
+            MaxIdleConns:        MaxIdleConns,
+            MaxIdleConnsPerHost: MaxIdleConnsPerHost,
+            IdleConnTimeout:	 time.Duration(IdleConnTimeout)* time.Second,
+        },
+		Timeout: 20 * time.Second,
+    }
+    return client
+}
+
 func sendForward(req *http.Request, rw http.ResponseWriter, addr string, client *authentication.ReqInfo) {
-	for _, v := range req.Trailer {
-		fmt.Println(v)
-	}
 	remote, err := http.NewRequest(req.Method, fmt.Sprintf("http://%s%s", addr, client.ReqUrl), req.Body)
-	for key, value := range req.Header {
+	if nil != err {
+		sendDaemonForward(500, fmt.Sprintf("service+%s+is+down", client.ServerName), req, rw)
+	}
+	forward(req, rw, remote)
+}
+
+func forward(r *http.Request, w http.ResponseWriter, remote *http.Request) {
+	for key, value := range r.Header {
 		for _, v := range value {
 			remote.Header.Add(key, v)
 		}
 	}
-	response, err := http.DefaultClient.Do(remote)
+	response, err := generatorClient().Do(remote)
 	if err != nil && response == nil {
-		log.Fatalf("Error sending request to API endpoint. %+v", err)
+		logger.Error("gateway", fmt.Sprintf("forward %+v", err))
 	} else {
-		// Close the connection to reuse it
 		defer response.Body.Close()
 		for key, value := range response.Header {
 			for _, v := range value {
-				rw.Header().Add(key, v)
+				w.Header().Add(key, v)
 			}
 		}
-		io.Copy(rw, response.Body)
+		io.Copy(w, response.Body)
 	}
 }
 
 func sendDaemonForward(code int, msg string, req *http.Request, rw http.ResponseWriter)  {
 	remote, err := http.NewRequest("GET", fmt.Sprintf("http://%s/v1/tips/%d?content=%s", daemonAddr, code, msg), nil)
-	for key, value := range req.Header {
-		for _, v := range value {
-			remote.Header.Add(key, v)
-		}
+	if nil != err {
+		logger.Error("gateway", fmt.Sprintf("forward %+v", err))
 	}
-	response, err := http.DefaultClient.Do(remote)
-	if err != nil && response == nil {
-		log.Fatalf("Error sending request to API endpoint. %+v", err)
-		//sendDaemonForward(502, "service%20inaccessibility", client)
-	} else {
-		// Close the connection to reuse it
-		defer response.Body.Close()
-		for key, value := range response.Header {
-			for _, v := range value {
-				rw.Header().Add(key, v)
-			}
-		}
-		io.Copy(rw, response.Body)
-	}
+	forward(req, rw, remote)
 }
 
-type Pxy struct {}
+/**
+	网关主逻辑
 
-func (*Pxy)ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	client := extractInfo(req)
-	flag, addr := cache.QueryWhiteList(req.RequestURI, client.ServerName)
+	@param: rw
+	@param: req
+*/
+func doGateway(rw http.ResponseWriter, req *http.Request) {
+	client := extractInfo(req) // 提取网关请求信息
+	flag, addr := cache.QueryWhiteList(req.RequestURI, client.ServerName) // 查询请求是否在白名单之内
 	if flag {
+		// 存在即转发
 		sendForward(req, rw, addr, client)
 		return
 	}
@@ -100,23 +114,27 @@ func (*Pxy)ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		sendDaemonForward(400, "can't%20find%20authorize%20info.", req, rw)
 		return
 	}
+	// 提取鉴权信息
 	client.Token = authentication.ExtractToken(req, key)
 	if nil != queryAuthInfo(client) { // 查询鉴权信息
 		logger.Info("gateway", "authentication information query failed.")
 		sendDaemonForward(401, "can't%20find%20authorize%20info.", req, rw)
 		return
 	}
+	// 服务查询服务影射
 	flag, addr = cache.MapToAddress(client.ServerName) // 查询服务映射表
 	if !flag { // 服务列表未查询到
 		logger.Info("gateway", "service not found.")
 		sendDaemonForward(404, "can't%20find%20" + client.ServerName + "%20info.", req, rw)
 		return
 	}
+	// 转发服务
 	sendForward(req, rw, addr, client)
 }
 
 /**
 	查询鉴权信息
+
 	@param: info - 提出的鉴权信息
 	@return: error - 鉴权错误信息
  */
@@ -146,12 +164,9 @@ func StartUpTCPServer(addr *string, serverCfg map[string]interface{}) {
 	if nil != serverCfg["tokenName"] {
 		key = serverCfg["tokenName"].(string)
 	} 
-	if nil != serverCfg["size"] {
-		capacity = int(serverCfg["size"].(float64))
-	}
 	if nil != serverCfg["needToken"] {
 		needToken = serverCfg["needToken"].(bool)
 	}
-	http.Handle("/", &Pxy{})
+	http.HandleFunc("/", doGateway)
 	http.ListenAndServe(*addr, nil)
 }

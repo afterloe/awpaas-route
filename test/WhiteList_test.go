@@ -4,7 +4,6 @@ import (
 	"testing"
 	"strings"
 	"io"
-	"fmt"
 	"time"
 	"os"
 )
@@ -19,18 +18,24 @@ func GetFormatTime() string {
 }
 
 func Test_whiteList(t *testing.T) {
-	whiteListCache := [...]string{"/member/login", "/fs/preview", "docker/images/json"}
-	reqUrl := "*/images/json"
+	whiteListCache := [...]string{"/member/login", "/fs/preview", "/docker/images/json"}
+	reqUrl := "/fs/preview?item=/fs/preview"
 	out = os.Stdout
 	for _, item := range whiteListCache {
-		if strings.Contains(reqUrl, item) {
+		if 0 == strings.Index(reqUrl, item) {
 			t.Log("find!")
 			return
 		}
 	}
-	logLayout = "[awpaas-route][%-7s][%-5s][%v] - %-7s\n"
-	t.Log(fmt.Fprintf(out, logLayout, "daemon", "log", GetFormatTime(), "not found"))
-	t.Log(fmt.Fprintf(out, logLayout, "tcp", "error", GetFormatTime(), "not found"))
-	t.Log(fmt.Fprintf(out, logLayout, "gateway", "info", GetFormatTime(), "not found"))
+	// for _, item := range whiteListCache {
+	// 	if strings.Contains(reqUrl, item) {
+	// 		t.Log("find!")
+	// 		return
+	// 	}
+	// }
+	// logLayout = "[awpaas-route][%-7s][%-5s][%v] - %-7s\n"
+	// t.Log(fmt.Fprintf(out, logLayout, "daemon", "log", GetFormatTime(), "not found"))
+	// t.Log(fmt.Fprintf(out, logLayout, "tcp", "error", GetFormatTime(), "not found"))
+	// t.Log(fmt.Fprintf(out, logLayout, "gateway", "info", GetFormatTime(), "not found"))
 }
 
