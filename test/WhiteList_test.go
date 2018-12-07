@@ -18,8 +18,8 @@ func GetFormatTime() string {
 }
 
 func Test_whiteList(t *testing.T) {
-	whiteListCache := [...]string{"/member/login", "/fs/preview", "/docker/images/json"}
-	reqUrl := "/fs/preview?item=/fs/preview"
+	whiteListCache := [...]string{"/member/login", "/fs/preview", "/docker/images/json", "/favicon.ico"}
+	reqUrl := "favicon.ico"
 	out = os.Stdout
 	for _, item := range whiteListCache {
 		if 0 == strings.Index(reqUrl, item) {
