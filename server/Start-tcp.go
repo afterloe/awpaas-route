@@ -81,7 +81,8 @@ func forward(r *http.Request, w http.ResponseWriter, remote *http.Request) {
 				w.Header().Add(key, v)
 			}
 		}
-		logger.Logger("gateway", fmt.Sprintf("%3d | %s", response.StatusCode, r.RequestURI))
+		logger.Logger("gateway", fmt.Sprintf("%3d | %15s | %-7s | %s", response.StatusCode,
+			r.Header.Get("X-Real-IP"), r.Method, r.RequestURI))
 		io.Copy(w, response.Body)
 	}
 }
