@@ -47,9 +47,7 @@ func generatorClient() *http.Client {
 	client := &http.Client{
         Transport: &http.Transport{
             Proxy: http.ProxyFromEnvironment,
-            DialContext: (&net.Dialer{
-                Timeout:   30 * time.Second,
-            }).DialContext,
+            DialContext: (&net.Dialer{ Timeout: 30 * time.Second,}).DialContext,
             MaxIdleConns:        MaxIdleConns,
             MaxIdleConnsPerHost: MaxIdleConnsPerHost,
             IdleConnTimeout:	 time.Duration(IdleConnTimeout)* time.Second,
@@ -83,6 +81,7 @@ func forward(r *http.Request, w http.ResponseWriter, remote *http.Request) {
 				w.Header().Add(key, v)
 			}
 		}
+		logger.Logger("gateway", fmt.Sprintf("%3d | %s", response.StatusCode, r.RequestURI))
 		io.Copy(w, response.Body)
 	}
 }
@@ -102,6 +101,9 @@ func sendDaemonForward(code int, msg string, req *http.Request, rw http.Response
 	@param: req
 */
 func doGateway(rw http.ResponseWriter, req *http.Request) {
+	if "/favicon.ico" == req.RequestURI {
+		return
+	}
 	client := extractInfo(req) // 提取网关请求信息
 	flag, addr := cache.QueryWhiteList(req.RequestURI, client.ServerName) // 查询请求是否在白名单之内
 	if flag {
