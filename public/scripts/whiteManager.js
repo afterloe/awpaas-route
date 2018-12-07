@@ -5,7 +5,7 @@ const generatorModify= async (old, n, path) => {
     await appendToRemote(n, path);
 };
 
-const whiteManagerURL = "manager/v1/whiteList";
+const whiteManagerURL = "/manager/v1/whiteList";
 
 class WhiteManager extends React.Component {
     constructor(props) {

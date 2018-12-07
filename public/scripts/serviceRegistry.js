@@ -6,7 +6,7 @@ const mapToList = data => {
     return arr;
 };
 
-const serviceRegistryURL = "manager/v1/serviceMap";
+const serviceRegistryURL = "/manager/v1/serviceMap";
 
 class ServiceRegistry extends React.Component {
     constructor(props) {
@@ -26,7 +26,7 @@ class ServiceRegistry extends React.Component {
 
     componentDidMount() {
         const that = this;
-        getListFromRemote("manager/v1/serviceMap").then(data => {
+        getListFromRemote(serviceRegistryURL).then(data => {
             that.setState({serviceList: mapToList(data)}); // 初始化数据
         }).catch(error => {
             that.setState({serviceList: [], msg: {type: "error", context: error}});
