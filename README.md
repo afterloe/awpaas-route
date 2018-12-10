@@ -19,6 +19,7 @@
 * 符合整体安全策略，保障网关与其SOA及底层系统的两方面安全。
 
 ## Hook 参数
+用于docker 启动
 ```sbtshell
 env REDIS_ADDR
 env REDIS_PORT
