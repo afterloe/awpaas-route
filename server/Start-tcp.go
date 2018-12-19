@@ -36,7 +36,9 @@ func init() {
 func extractInfo(req *http.Request) *authentication.ReqInfo {
 	urlArr := strings.Split(req.RequestURI, "/")
 	schema := req.Header.Get("X-Forwarded-Proto")
-	if "" == schema {
+	if "ws" == schema {
+		schema = "ws" // 支持webSocket
+	} else {
 		schema = "http"
 	}
 	return &authentication.ReqInfo{
