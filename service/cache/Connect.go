@@ -46,6 +46,7 @@ func LoadCache(list []interface{}) {
 func toRemote(action string, key ...interface{}) (interface{}, error) {
 	// 如果熔断开启 并且 两次间隔没有超过30秒 直接返回
 	if fuse && 30 * 1000 > time.Now().Sub(startTime) {
+		logger.Error("cache", "fuse is open")
 		return nil, &exceptions.Error{Msg: "fuse is open", Code: 500}
 	}
 	conn, err := redis.Dial("tcp", redisAddr, redis.DialConnectTimeout(3 * time.Second),
@@ -56,6 +57,12 @@ func toRemote(action string, key ...interface{}) (interface{}, error) {
 		startTime = time.Now()
 		return nil, err
 	}
+	//defer func() {
 	defer conn.Close()
+	//	ch := make(chan int)
+	//	ch <- 103
+	//}()
+	//reply, err := conn.Do(action, key...)
+	//return reply, err
 	return conn.Do(action, key...)
 }
