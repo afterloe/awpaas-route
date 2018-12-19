@@ -35,10 +35,15 @@ func init() {
 
 func extractInfo(req *http.Request) *authentication.ReqInfo {
 	urlArr := strings.Split(req.RequestURI, "/")
+	schema := req.Header.Get("X-Forwarded-Proto")
+	if "" == schema {
+		schema = "http"
+	}
 	return &authentication.ReqInfo{
 		Method: req.Method,
 		ServerName: urlArr[1],
 		Way: req.Proto,
+		Scheme: schema,
 		ReqUrl: "/" + strings.Join(urlArr[2:], "/"),
 	}
 }
@@ -58,7 +63,7 @@ func generatorClient() *http.Client {
 }
 
 func sendForward(req *http.Request, rw http.ResponseWriter, addr string, client *authentication.ReqInfo) {
-	remote, err := http.NewRequest(req.Method, fmt.Sprintf("http://%s%s", addr, client.ReqUrl), req.Body)
+	remote, err := http.NewRequest(req.Method, fmt.Sprintf("%s://%s%s", client.Scheme ,addr, client.ReqUrl), req.Body)
 	if nil != err {
 		sendDaemonForward(500, fmt.Sprintf("service+%s+is+down", client.ServerName), req, rw)
 	}
