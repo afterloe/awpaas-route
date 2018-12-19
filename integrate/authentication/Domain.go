@@ -11,6 +11,7 @@ type ReqInfo struct {
 	Way string // http标题
 	ReqUrl string // 请求url
 	Token *tokenInfo // token信息
+	Scheme string // 报文头
 }
 
 type tokenInfo struct {
@@ -19,8 +20,8 @@ type tokenInfo struct {
 }
 
 func(r *ReqInfo) String() string {
-	return fmt.Sprintf("method: %s \t serverName: %s \t reqUrl: %s \t token: %s \t way: %s",
-		r.Method, r.ServerName, r.ReqUrl, r.Token, r.Way)
+	return fmt.Sprintf("method: %s \t serverName: %s \t reqUrl: %s \t token: %s \t way: %s \t scheme: %s",
+		r.Method, r.ServerName, r.ReqUrl, r.Token, r.Way, r.Scheme)
 }
 
 func(t *tokenInfo) String() string {
