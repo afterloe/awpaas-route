@@ -64,7 +64,7 @@ func StartUpCacheServer(addr *string, channel []interface{}) {
 		case redis.Message:
 			handleMessage(v.Channel, v.Data)
 		case redis.Subscription:
-			fmt.Printf("%s: %s %d\n", v.Channel, v.Kind, v.Count)
+			logger.Logger("cache", fmt.Sprintf("%s: %s count %d", v.Channel, v.Kind, v.Count))
 		case error:
 			return
 		}
