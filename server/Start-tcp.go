@@ -33,6 +33,9 @@ func init() {
     IdleConnTimeout = 90
 }
 
+/*
+	提取信息
+**/
 func extractInfo(req *http.Request) *authentication.ReqInfo {
 	urlArr := strings.Split(req.RequestURI, "/")
 	schema := req.Header.Get("X-Forwarded-Proto")

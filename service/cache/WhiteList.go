@@ -77,6 +77,12 @@ func GetWhiteListFromRemote(key string) bool {
 	将白名单列表 更新至远程缓存
  */
 func SendWhiteListToRemote(key string) {
+	if 0 == len(whiteListCache) {
+		reply, _ := redis.String(toRemote("DEL", key))
+		logger.Info("cache", reply)
+		toRemote("PUBLISH", channelName4list, "CLEAN\\t\\n"+ whiteListKey)
+		return
+	}
 	content := strings.Join(whiteListCache, "\\t\\n")
 	reply, _ := redis.String(toRemote("SET", key, content))
 	logger.Info("cache", reply)

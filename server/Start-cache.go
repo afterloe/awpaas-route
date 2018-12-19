@@ -22,6 +22,8 @@ func whiteListChange(action, key string) {
 	switch action {
 	case "GET":
 		cache.GetWhiteListFromRemote(key)
+	case "CLEAN":
+		cache.GetWhiteListFromRemote(action)
 	}
 }
 
