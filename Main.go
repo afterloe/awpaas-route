@@ -116,7 +116,7 @@ func main() {
 	logger.Info("main", "service init ...")
 	logger.Info("main",fmt.Sprintf("machine is %d cpus.", cpuNumber))
 	serverCfg := config.Get("server").(map[string]interface{})
-	finish := make(chan bool)
+	finish := make(chan int)
 	if nil == serverCfg {
 		startDefault()
 		return
