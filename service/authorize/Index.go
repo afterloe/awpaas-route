@@ -29,6 +29,9 @@ func init() {
 	查询鉴权信息
 */
 func QueryAuthorizeInfo(token, accessServiceName, url string) (bool, string) {
+	if !enable {
+		return true, ""
+	}
 	registry, addr := cache.MapToAddress(serviceName)
 	if !registry {
 		return false, ""
