@@ -46,6 +46,9 @@ func extractInfo(req *http.Request) *authentication.ReqInfo {
 	}
 }
 
+/**
+	启动转发服务
+*/
 func sendForward(req *http.Request, rw http.ResponseWriter, addr string, client *authentication.ReqInfo) {
 	remote, err := http.NewRequest(req.Method, fmt.Sprintf("%s://%s%s", client.Scheme ,addr, client.ReqUrl), req.Body)
 	if nil != err {
@@ -54,6 +57,9 @@ func sendForward(req *http.Request, rw http.ResponseWriter, addr string, client 
 	forward(req, rw, remote)
 }
 
+/**
+	转发服务业务逻辑
+*/
 func forward(r *http.Request, w http.ResponseWriter, remote *http.Request) {
 	for key, value := range r.Header {
 		for _, v := range value {
@@ -76,6 +82,9 @@ func forward(r *http.Request, w http.ResponseWriter, remote *http.Request) {
 	}
 }
 
+/**
+	转发服务到守护进程
+*/
 func sendDaemonForward(code int, msg string, req *http.Request, rw http.ResponseWriter)  {
 	remote, err := http.NewRequest("GET", fmt.Sprintf("http://%s/v1/tips/%d?content=%s", daemonAddr, code, msg), nil)
 	if nil != err {

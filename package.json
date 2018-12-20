@@ -2,8 +2,13 @@
   "custom": {
     "tokenName": "access-token",
     "needToken": true,
-    "whiteList": ["/member/login", "/fs/preview"],
-    "authorizedServcieName": "authorize"
+    "whiteList": ["/member/login", "/fs/preview"]
+  },
+  "author": {
+    "enable": true,
+    "serviceName": "authorize",
+    "who": "",
+    "access": ""
   },
   "info": {
     "name": "awpaas-route",

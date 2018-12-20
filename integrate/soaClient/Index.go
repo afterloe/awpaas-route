@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"encoding/json"
+	"net/url"
 )
 
 var (
@@ -30,6 +31,14 @@ func JsonToObject(chunk string) (map[string]interface{}, error){
 		return nil, err
 	}
 	return rep, nil
+}
+
+func Encode(params map[string]interface{}) string {
+	context := url.Values{}
+	for key, value := range params {
+		context.Add(key, value.(string))
+	}
+	return context.Encode()
 }
 
 func Call(method, serviceName, url string, body io.ReadCloser, header map[string]string) (map[string]interface{}, error) {
