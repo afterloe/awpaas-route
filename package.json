@@ -5,14 +5,15 @@
     "whiteList": ["/member/login", "/fs/preview"]
   },
   "author": {
-    "enable": true,
+    "enable": false,
     "serviceName": "authorize",
     "who": "",
     "access": ""
   },
   "info": {
     "name": "awpaas-route",
-    "version": "1.1.3",
+    "version": "1.1.4",
+    "updateTime": "2018-12-20 15:05:11",
     "author": "afterloe[lm6289511@gmai.com]",
     "homePage": "https://github.com/afterloe",
     "remarks": "统一访问网关，转发socket服务，实现服务鉴权"
