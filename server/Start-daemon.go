@@ -20,7 +20,6 @@ func init() {
 
 /**
 	启动守护进程
-
 */
 func StartUpDaemonService(addr *string, cfg interface{}) {
 	gin.DisableConsoleColor()

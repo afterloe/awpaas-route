@@ -3,6 +3,7 @@ package server
 import (
 	"../integrate/logger"
 	"../integrate/authentication"
+	"../integrate/soaClient"
 	"../service/authorize"
 	"../exceptions"
 	"../service/cache"
@@ -10,8 +11,6 @@ import (
 	"strings"
 
 	"io"
-	"net"
-	"time"
 	"net/http"
 )
 
@@ -19,23 +18,17 @@ var (
 	key string
 	needToken bool
 	daemonAddr string
-	MaxIdleConns int
-	MaxIdleConnsPerHost int
-	IdleConnTimeout int
 )
 
 func init() {
 	key = "access-token"
 	needToken = false
 	daemonAddr = "127.0.0.1:8081"
-	MaxIdleConns = 100
-    MaxIdleConnsPerHost = 100
-    IdleConnTimeout = 90
 }
 
-/*
+/**
 	提取信息
-**/
+*/
 func extractInfo(req *http.Request) *authentication.ReqInfo {
 	urlArr := strings.Split(req.RequestURI, "/")
 	schema := req.Header.Get("X-Forwarded-Proto")
@@ -53,20 +46,9 @@ func extractInfo(req *http.Request) *authentication.ReqInfo {
 	}
 }
 
-func generatorClient() *http.Client {
-	client := &http.Client{
-        Transport: &http.Transport{
-            Proxy: http.ProxyFromEnvironment,
-            DialContext: (&net.Dialer{ Timeout: 30 * time.Second,}).DialContext,
-            MaxIdleConns:        MaxIdleConns,
-            MaxIdleConnsPerHost: MaxIdleConnsPerHost,
-            IdleConnTimeout:	 time.Duration(IdleConnTimeout)* time.Second,
-        },
-		Timeout: 20 * time.Second,
-    }
-    return client
-}
-
+/**
+	启动转发服务
+*/
 func sendForward(req *http.Request, rw http.ResponseWriter, addr string, client *authentication.ReqInfo) {
 	remote, err := http.NewRequest(req.Method, fmt.Sprintf("%s://%s%s", client.Scheme ,addr, client.ReqUrl), req.Body)
 	if nil != err {
@@ -75,13 +57,16 @@ func sendForward(req *http.Request, rw http.ResponseWriter, addr string, client 
 	forward(req, rw, remote)
 }
 
+/**
+	转发服务业务逻辑
+*/
 func forward(r *http.Request, w http.ResponseWriter, remote *http.Request) {
 	for key, value := range r.Header {
 		for _, v := range value {
 			remote.Header.Add(key, v)
 		}
 	}
-	response, err := generatorClient().Do(remote)
+	response, err := soaClient.GeneratorClient().Do(remote)
 	if err != nil && response == nil {
 		logger.Error("gateway", fmt.Sprintf("forward %+v", err))
 	} else {
@@ -97,6 +82,9 @@ func forward(r *http.Request, w http.ResponseWriter, remote *http.Request) {
 	}
 }
 
+/**
+	转发服务到守护进程
+*/
 func sendDaemonForward(code int, msg string, req *http.Request, rw http.ResponseWriter)  {
 	remote, err := http.NewRequest("GET", fmt.Sprintf("http://%s/v1/tips/%d?content=%s", daemonAddr, code, msg), nil)
 	if nil != err {

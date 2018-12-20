@@ -11,7 +11,6 @@ import (
 
 /**
 	服务发现 信息监听处理与分发
-
 */
 func serviceDiscovery(action, key string) {
 	logger.Logger("cache", fmt.Sprintf("do %-7s by %-7s", action, key))
