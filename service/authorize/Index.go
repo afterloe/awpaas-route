@@ -4,7 +4,6 @@ import (
 	"../../config"
 	"../../integrate/soaClient"
 	"../cache"
-	"strconv"
 	"../../integrate/logger"
 )
 
@@ -14,15 +13,14 @@ var (
 )
 
 func init() {
-	cfg := config.Get("author").(map[string]string)
-	flag, err := strconv.ParseBool(cfg["enable"])
-	if nil != err {
-		flag = false
+	cfg := config.Get("author").(map[string]interface{})
+	enable = false
+	if cfg["enable"].(bool) {
+		enable = cfg["enable"].(bool)
 	}
-	enable = flag
-	who = cfg["who"]
-	access = cfg["access"]
-	serviceName = cfg["serviceName"]
+	who = cfg["who"].(string)
+	access = cfg["access"].(string)
+	serviceName = cfg["serviceName"].(string)
 }
 
 /*
