@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-	"os"
 )
 
 /**
@@ -61,17 +60,19 @@ func handleMessage(channel string, data []byte) {
 /**
 	每30秒 判断远程服务器是否能够启动
 */
-func reConn(addr *string) {
+func reConn(addr *string, channel []interface{}) {
+	logger.Error("cache", "try to link remote 30s later")
 	timer := time.NewTicker(30 * time.Second)
 	for {
 		select {
 		case <-timer.C:
 			func() {
-				_, err := redis.Dial("tcp", *addr, redis.DialConnectTimeout(3 * time.Second))
+				conn, err := redis.Dial("tcp", *addr, redis.DialConnectTimeout(3 * time.Second))
 				if nil != err {
-					os.Exit(10)
+					reConn(addr, channel)
 				} else {
-					reConn(addr)
+					conn.Close()
+					StartUpCacheServer(addr, channel)
 				}
 			}()
 		}
@@ -88,9 +89,9 @@ func StartUpCacheServer(addr *string, channel []interface{}) {
 		return
 	}
 	defer func() {
-		logger.Error("cache", "linked service is down")
+		logger.Error("cache", "remote service is down")
 		// reload
-		reConn(addr)
+		reConn(addr, channel)
 	}()
 	defer conn.Close()
 	if nil != err {
