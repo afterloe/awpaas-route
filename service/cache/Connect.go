@@ -57,12 +57,6 @@ func toRemote(action string, key ...interface{}) (interface{}, error) {
 		startTime = time.Now()
 		return nil, err
 	}
-	//defer func() {
 	defer conn.Close()
-	//	ch := make(chan int)
-	//	ch <- 103
-	//}()
-	//reply, err := conn.Do(action, key...)
-	//return reply, err
 	return conn.Do(action, key...)
 }
