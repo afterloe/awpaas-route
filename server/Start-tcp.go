@@ -100,6 +100,7 @@ func sendDaemonForward(code int, msg string, req *http.Request, rw http.Response
 	@param: req
 */
 func doGateway(rw http.ResponseWriter, req *http.Request) {
+	//日志 缺少访问 计时 以及 谁访问了什么路径
 	if "/favicon.ico" == req.RequestURI {
 		return
 	}
